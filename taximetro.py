@@ -161,7 +161,7 @@ class Trayecto:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# GESTORES (Lógica de negocio)
+# GESTORES
 # ══════════════════════════════════════════════════════════════════════════════
 
 class GestorConfig:
@@ -280,3 +280,4 @@ class GestorAuth:
             self._usuarios[usuario]["hash"] = self._hash(nueva)
             self._guardar()
             logger.info(f"Contraseña cambiada para '{usuario}'.")
+            
