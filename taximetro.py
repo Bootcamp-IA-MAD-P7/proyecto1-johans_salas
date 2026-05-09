@@ -4,9 +4,11 @@
 #Creado por: Johans Enrique Salas Rodríguez
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 # ══════════════════════════════════════════════════════════════════════════════
 #LIBRERÍAS
 # ══════════════════════════════════════════════════════════════════════════════
+
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 import tkinter as tk
@@ -19,9 +21,36 @@ import hashlib
 import os
 from typing import Optional
 
+
+# ══════════════════════════════════════════════════════════════════════════════
+# CONFIGURACIÓN DE LOGGING
+# ══════════════════════════════════════════════════════════════════════════════
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.FileHandler("taximetro.log", encoding="utf-8"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger("Taximetro")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RUTAS DE ARCHIVOS
+# ══════════════════════════════════════════════════════════════════════════════
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+HISTORY_FILE = os.path.join(BASE_DIR, "historial.json")
+CONFIG_FILE  = os.path.join(BASE_DIR, "config.json")
+USERS_FILE   = os.path.join(BASE_DIR, "usuarios.json")
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # MODELOS DE DATOS
 # ══════════════════════════════════════════════════════════════════════════════
+
 @dataclass
 class Tarifa:
     """Tarifas configurables del taxímetro."""
@@ -130,6 +159,124 @@ class Trayecto:
         d.setdefault("servicio", "economico")
         return cls(**d)
 
+
 # ══════════════════════════════════════════════════════════════════════════════
 # GESTORES (Lógica de negocio)
 # ══════════════════════════════════════════════════════════════════════════════
+
+class GestorConfig:
+    """Gestiona la configuración de tarifas."""
+
+    def __init__(self):
+        self._tarifa = self._cargar()
+
+    def _cargar(self) -> Tarifa:
+        if os.path.exists(CONFIG_FILE):
+            try:
+                with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                logger.info("Configuración cargada desde archivo.")
+                return Tarifa.from_dict(data)
+            except Exception as e:
+                logger.warning(f"Error cargando config: {e}. Usando valores por defecto.")
+        return Tarifa()
+
+    def guardar(self):
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(self._tarifa.to_dict(), f, indent=2)
+        logger.info("Configuración guardada.")
+
+    @property
+    def tarifa(self) -> Tarifa:
+        return self._tarifa
+
+    def actualizar(self, parado: float, movimiento: float, bandera: float):
+        self._tarifa.precio_parado = parado
+        self._tarifa.precio_movimiento = movimiento
+        self._tarifa.precio_bajada_bandera = bandera
+        self.guardar()
+        logger.info(f"Tarifas actualizadas: parado={parado}, movimiento={movimiento}, bandera={bandera}")
+
+
+class GestorHistorial:
+    """Gestiona el historial de trayectos."""
+
+    def __init__(self):
+        self._trayectos: list[Trayecto] = self._cargar()
+
+    def _cargar(self) -> list:
+        if os.path.exists(HISTORY_FILE):
+            try:
+                with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                return [Trayecto.from_dict(t) for t in data]
+            except Exception as e:
+                logger.warning(f"Error cargando historial: {e}")
+        return []
+
+    def guardar(self):
+        with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+            json.dump([t.to_dict() for t in self._trayectos], f, indent=2, ensure_ascii=False)
+
+    def agregar(self, trayecto: Trayecto):
+        self._trayectos.append(trayecto)
+        self.guardar()
+        logger.info(f"Trayecto {trayecto.id} guardado en historial. Total: {trayecto.importe_total:.2f}€")
+
+    @property
+    def trayectos(self) -> list:
+        return self._trayectos
+
+    def total_recaudado(self) -> float:
+        return sum(t.importe_total for t in self._trayectos)
+
+
+class GestorAuth:
+    """Sistema de autenticación con contraseñas hasheadas."""
+
+    def __init__(self):
+        self._usuarios: dict = self._cargar()
+        if not self._usuarios:
+            self._crear_usuario_default()
+
+    def _cargar(self) -> dict:
+        if os.path.exists(USERS_FILE):
+            try:
+                with open(USERS_FILE, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception as e:
+                logger.warning(f"Error cargando usuarios: {e}")
+        return {}
+
+    def _guardar(self):
+        with open(USERS_FILE, "w", encoding="utf-8") as f:
+            json.dump(self._usuarios, f, indent=2)
+
+    def _hash(self, password: str) -> str:
+        return hashlib.sha256(password.encode()).hexdigest()
+
+    def _crear_usuario_default(self):
+        """Crea usuario admin por defecto: admin/1234"""
+        self._usuarios["admin"] = {
+            "hash": self._hash("1234"),
+            "rol": "admin"
+        }
+        self._guardar()
+        logger.info("Usuario por defecto creado: admin/1234")
+
+    def autenticar(self, usuario: str, password: str) -> bool:
+        if usuario in self._usuarios:
+            ok = self._usuarios[usuario]["hash"] == self._hash(password)
+            if ok:
+                logger.info(f"Acceso concedido a '{usuario}'.")
+            else:
+                logger.warning(f"Contraseña incorrecta para '{usuario}'.")
+            return ok
+        logger.warning(f"Usuario '{usuario}' no encontrado.")
+        return False
+
+    def cambiar_password(self, usuario: str, nueva: str):
+        if usuario in self._usuarios:
+            self._usuarios[usuario]["hash"] = self._hash(nueva)
+            self._guardar()
+            logger.info(f"Contraseña cambiada para '{usuario}'.")
