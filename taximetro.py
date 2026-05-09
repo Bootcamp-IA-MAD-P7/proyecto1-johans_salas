@@ -47,3 +47,55 @@ class TipoServicio:
         if self.multiplicador < 1.0:
             partes.append(f"x{self.multiplicador} tarifa")
         return " · ".join(partes) if partes else "Sin cargo extra"
+    
+# Catálogo de servicios disponibles
+SERVICIOS: list[TipoServicio] = [
+    TipoServicio(
+        clave="economico",
+        nombre="Económico",
+        emoji="🚗",
+        descripcion="Tarifa estándar sin recargos",
+        cargo_fijo=0.0,
+        multiplicador=1.0,
+        color="#888888",
+    ),
+    TipoServicio(
+        clave="xl",
+        nombre="XL / Familiar",
+        emoji="👨‍👩‍👧",
+        descripcion="Vehículo de mayor capacidad",
+        cargo_fijo=2.00,
+        multiplicador=1.4,
+        color="#1e90ff",
+    ),
+    TipoServicio(
+        clave="compartido",
+        nombre="Compartido",
+        emoji="👥",
+        descripcion="Viaje compartido, precio reducido",
+        cargo_fijo=0.0,
+        multiplicador=0.6,
+        color="#00c896",
+    ),
+    TipoServicio(
+        clave="pet",
+        nombre="Pet Friendly",
+        emoji="🐾",
+        descripcion="Mascotas permitidas",
+        cargo_fijo=1.50,
+        multiplicador=1.0,
+        color="#ff9f43",
+    ),
+    TipoServicio(
+        clave="flash",
+        nombre="Flash",
+        emoji="⚡",
+        descripcion="Recogida prioritaria más rápida",
+        cargo_fijo=3.00,
+        multiplicador=1.2,
+        color="#f5c518",
+    ),
+]
+
+# Mapa para acceso rápido por clave
+SERVICIOS_MAP: dict[str, TipoServicio] = {s.clave: s for s in SERVICIOS}
