@@ -9,6 +9,15 @@
 # ══════════════════════════════════════════════════════════════════════════════
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
+import tkinter as tk
+from tkinter import ttk, messagebox, simpledialog
+import threading
+import time
+import logging
+import json
+import hashlib
+import os
+from typing import Optional
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MODELOS DE DATOS
@@ -120,3 +129,7 @@ class Trayecto:
         # Compatibilidad con trayectos guardados sin campo 'servicio'
         d.setdefault("servicio", "economico")
         return cls(**d)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# GESTORES (Lógica de negocio)
+# ══════════════════════════════════════════════════════════════════════════════
