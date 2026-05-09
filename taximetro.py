@@ -99,3 +99,24 @@ SERVICIOS: list[TipoServicio] = [
 
 # Mapa para acceso rápido por clave
 SERVICIOS_MAP: dict[str, TipoServicio] = {s.clave: s for s in SERVICIOS}
+
+@dataclass
+class Trayecto:
+    """Representa un trayecto completo."""
+    id: str
+    fecha_inicio: str
+    fecha_fin: str = ""
+    segundos_parado: float = 0.0
+    segundos_movimiento: float = 0.0
+    importe_total: float = 0.0
+    conductor: str = ""
+    servicio: str = "economico"   # clave del TipoServicio
+
+    def to_dict(self):
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, d: dict):
+        # Compatibilidad con trayectos guardados sin campo 'servicio'
+        d.setdefault("servicio", "economico")
+        return cls(**d)
