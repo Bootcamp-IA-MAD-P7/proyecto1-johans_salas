@@ -81,7 +81,7 @@ class TipoServicio:
         partes = []
         if self.cargo_fijo > 0:
             partes.append(f"+{self.cargo_fijo:.2f}€ fijo")
-        if self.multiplicador >= 1.0:
+        if self.multiplicador > 1.0:
             partes.append(f"x{self.multiplicador} tarifa")
         elif self.multiplicador < 1.0:
             partes.append(f"x{self.multiplicador} tarifa (descuento)")
