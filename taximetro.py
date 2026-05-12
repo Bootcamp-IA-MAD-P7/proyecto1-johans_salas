@@ -455,7 +455,7 @@ class VentanaLogin(tk.Toplevel):
                                    bg=COLORES["bg"], fg=COLORES["rojo"])
         self.lbl_error.pack(pady=(0, 10))
 
-        tk.Label(frame, text="Usuario por defecto: admin / 1234",
+        tk.Label(frame, text="Contacta al administrador si olvidaste tu clave",
                  font=FUENTE_PEQUENA, bg=COLORES["bg"], fg=COLORES["subtexto"]).pack(pady=(0,10))
 
         btn = tk.Button(frame, text="ENTRAR", font=FUENTE_TITULO,
