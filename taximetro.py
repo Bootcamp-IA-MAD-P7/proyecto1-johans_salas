@@ -496,8 +496,8 @@ class AppTaximetro(tk.Tk):
         self.servicio_actual: TipoServicio = SERVICIOS_MAP["economico"]
 
         # Mostrar login
-        VentanaLogin(self, self.gestor_auth, self._post_login)
-        self.wait_window(self.children.get(list(self.children.keys())[-1], self))
+        login = VentanaLogin(self, self.gestor_auth, self._post_login)
+        self.wait_window(login)
 
     def _post_login(self, usuario: str):
         self.conductor_actual = usuario
