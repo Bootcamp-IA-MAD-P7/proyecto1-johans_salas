@@ -363,7 +363,7 @@ class MotorTaximetro:
         self._activo = False
         fin = datetime.now()
         trayecto = Trayecto(
-            id=self._inicio.strftime("%Y%m%d%H%M%S"),
+            id=self._inicio.strftime("%Y%m%d%H%M%S%f"),
             fecha_inicio=self._inicio.strftime("%d/%m/%Y %H:%M:%S"),
             fecha_fin=fin.strftime("%d/%m/%Y %H:%M:%S"),
             segundos_parado=round(self._segundos_parado, 1),
