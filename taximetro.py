@@ -300,7 +300,7 @@ class MotorTaximetro:
         self._inicio: Optional[datetime] = None
         self._hilo: Optional[threading.Thread] = None
         self._lock = threading.Lock()
-        self.on_tick = None  # Callback para actualizar la GUI
+        self.cola_tick: queue.Queue = queue.Queue()
 
     @property
     def activo(self) -> bool:
@@ -350,8 +350,7 @@ class MotorTaximetro:
                 else:
                     self._segundos_parado += INTERVALO
                     self._importe += self.tarifa.precio_parado * mul * INTERVALO
-            if self.on_tick:
-                self.on_tick()
+            self.cola_tick.put_nowait(True)
 
     def toggle_movimiento(self):
         with self._lock:
@@ -490,7 +489,6 @@ class AppTaximetro(tk.Tk):
 
         # Motor (se recrea en cada trayecto)
         self.motor = MotorTaximetro(self.gestor_config.tarifa)
-        self.motor.on_tick = self._actualizar_display
 
         self.conductor_actual = ""
         self.servicio_actual: TipoServicio = SERVICIOS_MAP["economico"]
@@ -698,8 +696,8 @@ class AppTaximetro(tk.Tk):
 
     def _iniciar(self):
         self.motor = MotorTaximetro(self.gestor_config.tarifa, self.servicio_actual)
-        self.motor.on_tick = self._actualizar_display
         self.motor.iniciar()
+        self._poll_motor()
 
         self.btn_iniciar.config(state="disabled")
         self.btn_toggle.config(state="normal")
@@ -747,9 +745,16 @@ class AppTaximetro(tk.Tk):
                             f"{extras_txt}\n\n"
                             f"💶 TOTAL:  {trayecto.importe_total:.2f} €")
 
-    def _actualizar_display(self):
-        """Llamado desde el hilo del motor cada tick."""
-        self.after(0, self._refrescar_labels)
+    def _poll_motor(self):
+        """Polling seguro desde el hilo principal de tkinter."""
+        try:
+            while True:
+                self.motor.cola_tick.get_nowait()
+                self._refrescar_labels()
+        except queue.Empty:
+            pass
+        if self.motor.activo:
+            self.after(100, self._poll_motor)
 
     def _refrescar_labels(self):
         with self.motor._lock:
