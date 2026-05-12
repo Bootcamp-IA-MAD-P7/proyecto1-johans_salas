@@ -752,13 +752,16 @@ class AppTaximetro(tk.Tk):
         self.after(0, self._refrescar_labels)
 
     def _refrescar_labels(self):
-        if not self.motor.activo:
-            return
-        self.lbl_importe.config(text=f"{self.motor.importe:.2f} €".replace(".", ","))
-        self.lbl_parado.valor_label.config(
-            text=f"{self.motor.segundos_parado:.0f}s")
-        self.lbl_movimiento.valor_label.config(
-            text=f"{self.motor.segundos_movimiento:.0f}s")
+        with self.motor._lock:
+            if not self.motor._activo:
+                return
+            importe = self.motor._importe
+            seg_parado = self.motor._segundos_parado
+            seg_mov = self.motor._segundos_movimiento
+
+        self.lbl_importe.config(text=f"{importe:.2f} €".replace(".", ","))
+        self.lbl_parado.valor_label.config(text=f"{seg_parado:.0f}s")
+        self.lbl_movimiento.valor_label.config(text=f"{seg_mov:.0f}s")
 
     def _actualizar_estado(self):
         if self.motor.en_movimiento:
