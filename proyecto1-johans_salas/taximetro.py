@@ -48,7 +48,7 @@ USERS_FILE   = os.path.join(BASE_DIR, "usuarios.json")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# MODELADO DE DATOS
+# MODELOS DE DATOS
 # ══════════════════════════════════════════════════════════════════════════════
 
 @dataclass
@@ -280,97 +280,3 @@ class GestorAuth:
             self._usuarios[usuario]["hash"] = self._hash(nueva)
             self._guardar()
             logger.info(f"Contraseña cambiada para '{usuario}'.")
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# MOTOR DEL TAXÍMETRO
-# ══════════════════════════════════════════════════════════════════════════════
-
-class MotorTaximetro:
-    """Núcleo de cálculo del taxímetro (independiente de la GUI)."""
-
-    def __init__(self, tarifa: Tarifa, servicio: "TipoServicio" = None):
-        self.tarifa = tarifa
-        self.servicio = servicio or SERVICIOS_MAP["economico"]
-        self._activo = False
-        self._en_movimiento = False
-        self._segundos_parado = 0.0
-        self._segundos_movimiento = 0.0
-        self._importe = 0.0
-        self._inicio: Optional[datetime] = None
-        self._hilo: Optional[threading.Thread] = None
-        self._lock = threading.Lock()
-        self.on_tick = None  # Callback para actualizar la GUI
-
-    @property
-    def activo(self) -> bool:
-        return self._activo
-
-    @property
-    def en_movimiento(self) -> bool:
-        return self._en_movimiento
-
-    @property
-    def importe(self) -> float:
-        return self._importe
-
-    @property
-    def segundos_parado(self) -> float:
-        return self._segundos_parado
-
-    @property
-    def segundos_movimiento(self) -> float:
-        return self._segundos_movimiento
-
-    def iniciar(self):
-        if self._activo:
-            return
-        self._activo = True
-        self._en_movimiento = False
-        self._segundos_parado = 0.0
-        self._segundos_movimiento = 0.0
-        # Bajada de bandera base + cargo fijo del servicio
-        self._importe = self.tarifa.precio_bajada_bandera + self.servicio.cargo_fijo
-        self._inicio = datetime.now()
-        self._hilo = threading.Thread(target=self._bucle, daemon=True)
-        self._hilo.start()
-        logger.info(f"Trayecto iniciado. Servicio: {self.servicio.nombre} "
-                    f"(cargo_fijo={self.servicio.cargo_fijo}€, "
-                    f"multiplicador=x{self.servicio.multiplicador})")
-
-    def _bucle(self):
-        INTERVALO = 0.1  # segundos
-        mul = self.servicio.multiplicador
-        while self._activo:
-            time.sleep(INTERVALO)
-            with self._lock:
-                if self._en_movimiento:
-                    self._segundos_movimiento += INTERVALO
-                    self._importe += self.tarifa.precio_movimiento * mul * INTERVALO
-                else:
-                    self._segundos_parado += INTERVALO
-                    self._importe += self.tarifa.precio_parado * mul * INTERVALO
-            if self.on_tick:
-                self.on_tick()
-
-    def toggle_movimiento(self):
-        with self._lock:
-            self._en_movimiento = not self._en_movimiento
-        estado = "movimiento" if self._en_movimiento else "parado"
-        logger.info(f"Estado cambiado a: {estado}")
-
-    def finalizar(self) -> Trayecto:
-        self._activo = False
-        fin = datetime.now()
-        trayecto = Trayecto(
-            id=self._inicio.strftime("%Y%m%d%H%M%S"),
-            fecha_inicio=self._inicio.strftime("%d/%m/%Y %H:%M:%S"),
-            fecha_fin=fin.strftime("%d/%m/%Y %H:%M:%S"),
-            segundos_parado=round(self._segundos_parado, 1),
-            segundos_movimiento=round(self._segundos_movimiento, 1),
-            importe_total=round(self._importe, 2),
-            servicio=self.servicio.clave,
-        )
-        logger.info(f"Trayecto finalizado. Servicio: {self.servicio.nombre}. "
-                    f"Importe: {trayecto.importe_total:.2f}€")
-        return trayecto
