@@ -703,6 +703,7 @@ class AppTaximetro(tk.Tk):
     def _iniciar(self):
         self.motor = MotorTaximetro(self.gestor_config.tarifa, self.servicio_actual)
         self.motor.iniciar()
+        self._refrescar_labels()
         self._poll_motor()
 
         self.btn_iniciar.config(state="disabled")
