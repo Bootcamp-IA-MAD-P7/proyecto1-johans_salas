@@ -709,6 +709,7 @@ class AppTaximetro(tk.Tk):
         self.btn_iniciar.config(state="disabled")
         self.btn_toggle.config(state="normal")
         self.btn_fin.config(state="normal")
+        self._actualizar_estado()
         # Bloquear cambio de servicio durante el trayecto
         for btn in self._btns_servicio.values():
             btn.config(state="disabled")
