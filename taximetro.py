@@ -753,12 +753,15 @@ class AppTaximetro(tk.Tk):
 
     def _poll_motor(self):
         """Polling seguro desde el hilo principal de tkinter."""
+        hay_tick = False
         try:
             while True:
                 self.motor.cola_tick.get_nowait()
-                self._refrescar_labels()
+                hay_tick = True         #Solo registrar que hubo actividad
         except queue.Empty:
             pass
+        if hay_tick:
+            self._refrescar_labels()    #Una sola actualización por ciclo de 100ms
         if self.motor.activo:
             self.after(100, self._poll_motor)
 
