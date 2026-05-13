@@ -717,6 +717,11 @@ class AppTaximetro(tk.Tk):
         trayecto = self.motor.finalizar(conductor=self.conductor_actual)
         self.gestor_historial.agregar(trayecto)
 
+        #Resetear el display al volver al estado inicial
+        self.lbl_importe.config(text="0,00 €")
+        self.lbl_parado.valor_label.config(text="0s")
+        self.lbl_movimiento.valor_label.config(text="0s")
+
         self.btn_iniciar.config(state="normal")
         self.btn_toggle.config(state="disabled")
         self.btn_fin.config(state="disabled")
