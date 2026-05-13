@@ -714,8 +714,7 @@ class AppTaximetro(tk.Tk):
         self._actualizar_estado()
 
     def _finalizar(self):
-        trayecto = self.motor.finalizar()
-        trayecto.conductor = self.conductor_actual
+        trayecto = self.motor.finalizar(conductor=self.conductor_actual)
         self.gestor_historial.agregar(trayecto)
 
         self.btn_iniciar.config(state="normal")
