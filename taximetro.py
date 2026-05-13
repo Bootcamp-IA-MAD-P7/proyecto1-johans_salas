@@ -776,9 +776,9 @@ class AppTaximetro(tk.Tk):
             importe = self.motor._importe
             seg_parado = self.motor._segundos_parado
             seg_mov = self.motor._segundos_movimiento
-            if not activo:
-                return
-
+        if not activo:
+            return
+        
         self.lbl_importe.config(text=f"{importe:.2f} €".replace(".", ","))
         self.lbl_parado.valor_label.config(text=f"{seg_parado:.0f}s")
         self.lbl_movimiento.valor_label.config(text=f"{seg_mov:.0f}s")
