@@ -9,7 +9,7 @@
 #LIBRERÍAS
 # ══════════════════════════════════════════════════════════════════════════════
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
@@ -196,7 +196,8 @@ class GestorConfig:
         self._tarifa.precio_movimiento = movimiento
         self._tarifa.precio_bajada_bandera = bandera
         self.guardar()
-        logger.info(f"Tarifas actualizadas: parado={parado}, movimiento={movimiento}, bandera={bandera}")
+        logger.info("Tarifas actualizadas: parado=%s, movimiento=%s, bandera=%s",
+                    parado, movimiento, bandera)
 
 
 class GestorHistorial:
@@ -212,7 +213,7 @@ class GestorHistorial:
                     data = json.load(f)
                 return [Trayecto.from_dict(t) for t in data]
             except Exception as e:
-                logger.warning(f"Error cargando historial: {e}")
+                logger.warning("Error cargando historial: %s", e)
         return []
 
     def guardar(self):
@@ -222,7 +223,8 @@ class GestorHistorial:
     def agregar(self, trayecto: Trayecto):
         self._trayectos.append(trayecto)
         self.guardar()
-        logger.info(f"Trayecto {trayecto.id} guardado en historial. Total: {trayecto.importe_total:.2f}€")
+        logger.info("Trayecto %s guardado en historial. Total: %.2f€",
+                    trayecto.id, trayecto.importe_total)
 
     @property
     def trayectos(self) -> list:
@@ -246,7 +248,7 @@ class GestorAuth:
                 with open(USERS_FILE, "r", encoding="utf-8") as f:
                     return json.load(f)
             except Exception as e:
-                logger.warning(f"Error cargando usuarios: {e}")
+                logger.warning("Error cargando usuarios: %s", e)
         return {}
 
     def _guardar(self):
@@ -269,18 +271,18 @@ class GestorAuth:
         if usuario in self._usuarios:
             ok = self._usuarios[usuario]["hash"] == self._hash(password)
             if ok:
-                logger.info(f"Acceso concedido a '{usuario}'.")
+                logger.info("Acceso concedido a '%s'.", usuario)
             else:
-                logger.warning(f"Contraseña incorrecta para '{usuario}'.")
+                logger.warning("Contraseña incorrecta para '%s'.", usuario)
             return ok
-        logger.warning(f"Usuario '{usuario}' no encontrado.")
+        logger.warning("Usuario '%s' no encontrado.", usuario)
         return False
 
     def cambiar_password(self, usuario: str, nueva: str):
         if usuario in self._usuarios:
             self._usuarios[usuario]["hash"] = self._hash(nueva)
             self._guardar()
-            logger.info(f"Contraseña cambiada para '{usuario}'.")
+            logger.info("Contraseña cambiada para '%s'.", usuario)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -356,7 +358,7 @@ class MotorTaximetro:
         with self._lock:
             self._en_movimiento = not self._en_movimiento
         estado = "movimiento" if self._en_movimiento else "parado"
-        logger.info(f"Estado cambiado a: {estado}")
+        logger.info("Estado cambiado a: %s", estado)
 
     def finalizar(self) -> Trayecto:
         self._activo = False
@@ -370,8 +372,8 @@ class MotorTaximetro:
             importe_total=round(self._importe, 2),
             servicio=self.servicio.clave,
         )
-        logger.info(f"Trayecto finalizado. Servicio: {self.servicio.nombre}. "
-                    f"Importe: {trayecto.importe_total:.2f}€")
+        logger.info("Trayecto finalizado. Servicio: %s. Importe: %.2f€",
+                    self.servicio.nombre, trayecto.importe_total)
         return trayecto
     
 
@@ -692,7 +694,7 @@ class AppTaximetro(tk.Tk):
         if extras:
             info += f"  ·  {', '.join(extras)}"
         self.lbl_srv_info.config(text=info, fg=srv.color if srv.clave != "economico" else COLORES["subtexto"])
-        logger.info(f"Servicio seleccionado: {srv.nombre}")
+        logger.info("Servicio seleccionado: %s", srv.nombre)
 
     def _iniciar(self):
         self.motor = MotorTaximetro(self.gestor_config.tarifa, self.servicio_actual)
@@ -757,6 +759,7 @@ class AppTaximetro(tk.Tk):
             self.after(100, self._poll_motor)
 
     def _refrescar_labels(self):
+        """Lee el estado del motor con lock y actualiza los widgets."""
         with self.motor._lock:
             if not self.motor._activo:
                 return
