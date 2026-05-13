@@ -360,7 +360,7 @@ class MotorTaximetro:
         estado = "movimiento" if self._en_movimiento else "parado"
         logger.info("Estado cambiado a: %s", estado)
 
-    def finalizar(self) -> Trayecto:
+    def finalizar(self, conductor: str ="") -> Trayecto:
         self._activo = False
         fin = datetime.now()
         trayecto = Trayecto(
@@ -371,6 +371,7 @@ class MotorTaximetro:
             segundos_movimiento=round(self._segundos_movimiento, 1),
             importe_total=round(self._importe, 2),
             servicio=self.servicio.clave,
+            conductor = conductor,
         )
         logger.info("Trayecto finalizado. Servicio: %s. Importe: %.2f€",
                     self.servicio.nombre, trayecto.importe_total)
