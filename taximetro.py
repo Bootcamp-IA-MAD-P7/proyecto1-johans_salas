@@ -179,7 +179,7 @@ class GestorConfig:
                 logger.info("Configuración cargada desde archivo.")
                 return Tarifa.from_dict(data)
             except Exception as e:
-                logger.warning(f"Error cargando config: {e}. Usando valores por defecto.")
+                logger.warning("Error cargando config: %s. Usando valores por defecto.", e)
         return Tarifa()
 
     def guardar(self):
@@ -335,9 +335,8 @@ class MotorTaximetro:
         self._inicio = datetime.now()
         self._hilo = threading.Thread(target=self._bucle, daemon=True)
         self._hilo.start()
-        logger.info(f"Trayecto iniciado. Servicio: {self.servicio.nombre} "
-                    f"(cargo_fijo={self.servicio.cargo_fijo}€, "
-                    f"multiplicador=x{self.servicio.multiplicador})")
+        logger.info("Trayecto iniciado. Servicio: %s (cargo_fijo=%.2f€, multiplicador=x%s)",
+            self.servicio.nombre, self.servicio.cargo_fijo, self.servicio.multiplicador)
 
     def _bucle(self):
         INTERVALO = 0.1  # segundos
@@ -502,7 +501,7 @@ class AppTaximetro(tk.Tk):
         self.conductor_actual = usuario
         self.deiconify()
         self._construir_ui()
-        logger.info(f"Sesión iniciada por '{usuario}'.")
+        logger.info("Sesión iniciada por '%s'.", usuario)
 
     def _construir_ui(self):
         self.title("🚕 Taxímetro Digital")
