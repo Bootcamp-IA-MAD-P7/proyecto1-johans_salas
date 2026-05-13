@@ -794,7 +794,7 @@ class AppTaximetro(tk.Tk):
     def _refrescar_historial(self):
         for row in self.tabla.get_children():
             self.tabla.delete(row)
-        for t in self.gestor_historial.trayectos[-21:-1]:
+        for t in reversed(self.gestor_historial.trayectos[-20:]):
             duracion = t.segundos_parado + t.segundos_movimiento
             srv = SERVICIOS_MAP.get(t.servicio, SERVICIOS_MAP["economico"])
             self.tabla.insert("", "end", values=(
