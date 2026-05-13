@@ -773,11 +773,12 @@ class AppTaximetro(tk.Tk):
     def _refrescar_labels(self):
         """Lee el estado del motor con lock y actualiza los widgets."""
         with self.motor._lock:
-            if not self.motor._activo:
-                return
+            activo = self.motor._activo
             importe = self.motor._importe
             seg_parado = self.motor._segundos_parado
             seg_mov = self.motor._segundos_movimiento
+            if not activo:
+                return
 
         self.lbl_importe.config(text=f"{importe:.2f} €".replace(".", ","))
         self.lbl_parado.valor_label.config(text=f"{seg_parado:.0f}s")
