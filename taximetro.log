@@ -39,3 +39,85 @@
 2026-05-14 00:26:12,892 [INFO] Taximetro: Estado cambiado a: movimiento
 2026-05-14 00:26:12,892 [INFO] Taximetro: Estado cambiado a: parado
 2026-05-14 00:26:12,892 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
+2026-05-14 00:37:53,867 [INFO] Taximetro: Usuario por defecto creado: admin/1234
+2026-05-14 00:37:53,872 [INFO] Taximetro: Contraseña cambiada para 'admin'.
+2026-05-14 00:37:53,875 [INFO] Taximetro: Acceso concedido a 'admin'.
+2026-05-14 00:37:53,875 [WARNING] Taximetro: Contraseña incorrecta para 'admin'.
+2026-05-14 00:37:53,880 [INFO] Taximetro: Usuario por defecto creado: admin/1234
+2026-05-14 00:37:53,881 [WARNING] Taximetro: Contraseña incorrecta para 'admin'.
+2026-05-14 00:37:53,888 [INFO] Taximetro: Usuario por defecto creado: admin/1234
+2026-05-14 00:37:53,890 [INFO] Taximetro: Acceso concedido a 'admin'.
+2026-05-14 00:37:53,895 [INFO] Taximetro: Usuario por defecto creado: admin/1234
+2026-05-14 00:37:53,896 [WARNING] Taximetro: Usuario 'noexiste' no encontrado.
+2026-05-14 00:37:53,900 [INFO] Taximetro: Configuración guardada.
+2026-05-14 00:37:53,900 [INFO] Taximetro: Tarifas actualizadas: parado=0.03, movimiento=0.08, bandera=1.75
+2026-05-14 00:37:53,907 [INFO] Taximetro: Configuración guardada.
+2026-05-14 00:37:53,910 [INFO] Taximetro: Tarifas actualizadas: parado=0.05, movimiento=0.1, bandera=2.0
+2026-05-14 00:37:53,911 [INFO] Taximetro: Configuración cargada desde archivo.
+2026-05-14 00:37:53,917 [INFO] Taximetro: Trayecto t001 guardado en historial. Total: 5.00€
+2026-05-14 00:37:53,925 [INFO] Taximetro: Trayecto t001 guardado en historial. Total: 5.00€
+2026-05-14 00:37:53,928 [INFO] Taximetro: Trayecto t002 guardado en historial. Total: 3.50€
+2026-05-14 00:37:53,932 [INFO] Taximetro: Trayecto t001 guardado en historial. Total: 5.00€
+2026-05-14 00:37:53,934 [INFO] Taximetro: Trayecto t002 guardado en historial. Total: 3.00€
+2026-05-14 00:37:53,940 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:37:53,941 [INFO] Taximetro: Estado cambiado a: movimiento
+2026-05-14 00:37:54,241 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.51€
+2026-05-14 00:37:54,242 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:37:54,543 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
+2026-05-14 00:37:54,544 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:37:55,045 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.51€
+2026-05-14 00:37:55,047 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:37:55,148 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
+2026-05-14 00:37:55,149 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:37:55,200 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
+2026-05-14 00:37:55,202 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:37:55,203 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
+2026-05-14 00:37:55,204 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:37:55,204 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
+2026-05-14 00:37:55,205 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:37:56,206 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.52€
+2026-05-14 00:37:56,207 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:37:56,208 [INFO] Taximetro: Estado cambiado a: movimiento
+2026-05-14 00:37:56,208 [INFO] Taximetro: Estado cambiado a: parado
+2026-05-14 00:37:56,208 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
+2026-05-14 00:38:36,257 [INFO] Taximetro: Usuario por defecto creado: admin/1234
+2026-05-14 00:38:36,259 [INFO] Taximetro: Contraseña cambiada para 'admin'.
+2026-05-14 00:38:36,261 [INFO] Taximetro: Acceso concedido a 'admin'.
+2026-05-14 00:38:36,261 [WARNING] Taximetro: Contraseña incorrecta para 'admin'.
+2026-05-14 00:38:36,266 [INFO] Taximetro: Usuario por defecto creado: admin/1234
+2026-05-14 00:38:36,269 [WARNING] Taximetro: Contraseña incorrecta para 'admin'.
+2026-05-14 00:38:36,272 [INFO] Taximetro: Usuario por defecto creado: admin/1234
+2026-05-14 00:38:36,273 [INFO] Taximetro: Acceso concedido a 'admin'.
+2026-05-14 00:38:36,276 [INFO] Taximetro: Usuario por defecto creado: admin/1234
+2026-05-14 00:38:36,277 [WARNING] Taximetro: Usuario 'noexiste' no encontrado.
+2026-05-14 00:38:36,280 [INFO] Taximetro: Configuración guardada.
+2026-05-14 00:38:36,280 [INFO] Taximetro: Tarifas actualizadas: parado=0.03, movimiento=0.08, bandera=1.75
+2026-05-14 00:38:36,283 [INFO] Taximetro: Configuración guardada.
+2026-05-14 00:38:36,283 [INFO] Taximetro: Tarifas actualizadas: parado=0.05, movimiento=0.1, bandera=2.0
+2026-05-14 00:38:36,285 [INFO] Taximetro: Configuración cargada desde archivo.
+2026-05-14 00:38:36,290 [INFO] Taximetro: Trayecto t001 guardado en historial. Total: 5.00€
+2026-05-14 00:38:36,295 [INFO] Taximetro: Trayecto t001 guardado en historial. Total: 5.00€
+2026-05-14 00:38:36,296 [INFO] Taximetro: Trayecto t002 guardado en historial. Total: 3.50€
+2026-05-14 00:38:36,300 [INFO] Taximetro: Trayecto t001 guardado en historial. Total: 5.00€
+2026-05-14 00:38:36,301 [INFO] Taximetro: Trayecto t002 guardado en historial. Total: 3.00€
+2026-05-14 00:38:36,306 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:38:36,307 [INFO] Taximetro: Estado cambiado a: movimiento
+2026-05-14 00:38:36,608 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.51€
+2026-05-14 00:38:36,611 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:38:36,913 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
+2026-05-14 00:38:36,914 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:38:37,414 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.51€
+2026-05-14 00:38:37,416 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:38:37,517 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
+2026-05-14 00:38:37,518 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:38:37,569 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
+2026-05-14 00:38:37,570 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:38:37,570 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
+2026-05-14 00:38:37,571 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:38:37,571 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
+2026-05-14 00:38:37,572 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:38:38,573 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.52€
+2026-05-14 00:38:38,574 [INFO] Taximetro: Trayecto iniciado. Servicio: Económico (cargo_fijo=0.00€, multiplicador=x1.0)
+2026-05-14 00:38:38,575 [INFO] Taximetro: Estado cambiado a: movimiento
+2026-05-14 00:38:38,575 [INFO] Taximetro: Estado cambiado a: parado
+2026-05-14 00:38:38,576 [INFO] Taximetro: Trayecto finalizado. Servicio: Económico. Importe: 1.50€
