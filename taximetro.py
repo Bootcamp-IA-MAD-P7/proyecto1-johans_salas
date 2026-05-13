@@ -360,7 +360,7 @@ class MotorTaximetro:
         estado = "movimiento" if self._en_movimiento else "parado"
         logger.info("Estado cambiado a: %s", estado)
 
-    def finalizar(self, conductor: str ="") -> Trayecto:
+    def finalizar(self, conductor: str = "") -> Trayecto:
         self._activo = False
         fin = datetime.now()
         trayecto = Trayecto(
@@ -499,6 +499,9 @@ class AppTaximetro(tk.Tk):
         # Mostrar login
         login = VentanaLogin(self, self.gestor_auth, self._post_login)
         self.wait_window(login)
+        if not login.resultado:
+            self.destroy()
+            return
 
     def _post_login(self, usuario: str):
         self.conductor_actual = usuario
