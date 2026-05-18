@@ -9,17 +9,12 @@
 #LIBRERÍAS
 # ══════════════════════════════════════════════════════════════════════════════
 
+import os
+import json
+import logging
+import hashlib
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
-import tkinter as tk
-from tkinter import ttk, messagebox, simpledialog
-import threading
-import time
-import logging
-import json
-import hashlib
-import os
-from typing import Optional
 
 # Configuración de KivyMD y Kivy
 from kivy.config import Config
@@ -112,7 +107,7 @@ SERVICIOS: list[TipoServicio] = [
         descripcion="Tarifa estándar sin recargos",
         cargo_fijo=0.0,
         multiplicador=1.0,
-        color="Gray",
+        color_name="Gray",
     ),
     TipoServicio(
         clave="xl",
@@ -121,7 +116,7 @@ SERVICIOS: list[TipoServicio] = [
         descripcion="Vehículo de mayor capacidad",
         cargo_fijo=2.00,
         multiplicador=1.4,
-        color="Blue",
+        color_name="Blue",
     ),
     TipoServicio(
         clave="compartido",
@@ -130,7 +125,7 @@ SERVICIOS: list[TipoServicio] = [
         descripcion="Viaje compartido, precio reducido",
         cargo_fijo=0.0,
         multiplicador=0.6,
-        color="Teal",
+        color_name"Teal",
     ),
     TipoServicio(
         clave="pet",
@@ -139,7 +134,7 @@ SERVICIOS: list[TipoServicio] = [
         descripcion="Mascotas permitidas",
         cargo_fijo=1.50,
         multiplicador=1.0,
-        color="Orange",
+        color_name"Orange",
     ),
     TipoServicio(
         clave="flash",
@@ -148,9 +143,18 @@ SERVICIOS: list[TipoServicio] = [
         descripcion="Recogida prioritaria más rápida",
         cargo_fijo=3.00,
         multiplicador=1.2,
-        color="Amber",
+        color_name"Amber",
     ),
 ]
+
+# Colores RGBA para KivyMD
+COLORES = {
+    "Gray": [0.5, 0.5, 0.5, 1],
+    "Blue": [0.1, 0.4, 0.9, 1],
+    "Teal": [0, 0.5, 0.5, 1],
+    "Orange": [1, 0.5, 0, 1],
+    "Amber": [1, 0.75, 0, 1],
+}
 
 # Mapa para acceso rápido por clave
 SERVICIOS_MAP: dict[str, TipoServicio] = {s.clave: s for s in SERVICIOS}
@@ -419,6 +423,8 @@ BoxLayout:
             size_hint_x: 1
             height: dp(60) # Botón más alto y redondeado
 
+            on_release: app.iniciar_taximetro()
+
         # Botón Parar (Pause)
         MDFillRoundFlatIconButton:
             icon: "pause-outline"
@@ -430,6 +436,8 @@ BoxLayout:
             size_hint_x: 1
             height: dp(60)
 
+            on_release: app.pausar_taximetro()
+
         # Botón Finalizar (Stop)
         MDFillRoundFlatIconButton:
             icon: "stop-outline"
@@ -439,6 +447,8 @@ BoxLayout:
             md_bg_color: 0.92, 0.26, 0.21, 1  # Rojo Material (#EA4335)
             size_hint_x: 1
             height: dp(60)
+
+            on_release: app.finalizar_taximetro()
 '''
 
 # Clases auxiliares para la UI
@@ -448,6 +458,15 @@ class ServiceListItem(OneLineAvatarListItem):
     service_color = ListProperty()
 
 class TaximetroApp(MDApp):
+    def iniciar_taximetro(self):
+        print("Taxímetro iniciado")
+
+    def pausar_taximetro(self):
+        print("Taxímetro pausado")
+
+    def finalizar_taximetro(self):
+        print("Trayecto finalizado")
+
     def build(self):
         # Configurar el tema visual de Material Design
         self.theme_cls.theme_style = "Light"  # O "Dark"
@@ -462,7 +481,10 @@ class TaximetroApp(MDApp):
                 icon_name=servicio.icon_name,
                 service_name=servicio.nombre,
                 # Convertir nombre de color KivyMD a lista RGBA
-                service_color=self.theme_cls.quad_color(servicio.color_name)
+                service_color=COLORES.get(
+                    servicio.color_name,
+                    [0, 0, 0, 1]
+                    )
             )
             service_list.add_widget(item)
 
