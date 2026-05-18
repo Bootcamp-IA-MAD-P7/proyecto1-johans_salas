@@ -125,7 +125,7 @@ SERVICIOS: list[TipoServicio] = [
         descripcion="Viaje compartido, precio reducido",
         cargo_fijo=0.0,
         multiplicador=0.6,
-        color_name"Teal",
+        color_name="Teal",
     ),
     TipoServicio(
         clave="pet",
@@ -134,7 +134,7 @@ SERVICIOS: list[TipoServicio] = [
         descripcion="Mascotas permitidas",
         cargo_fijo=1.50,
         multiplicador=1.0,
-        color_name"Orange",
+        color_name="Orange",
     ),
     TipoServicio(
         clave="flash",
@@ -143,7 +143,7 @@ SERVICIOS: list[TipoServicio] = [
         descripcion="Recogida prioritaria más rápida",
         cargo_fijo=3.00,
         multiplicador=1.2,
-        color_name"Amber",
+        color_name="Amber",
     ),
 ]
 
