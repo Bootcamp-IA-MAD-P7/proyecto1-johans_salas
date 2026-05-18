@@ -116,7 +116,7 @@ SERVICIOS: list[TipoServicio] = [
         descripcion="Vehículo de mayor capacidad",
         cargo_fijo=2.00,
         multiplicador=1.4,
-        color_name"Blue",
+        color_name="Blue",
     ),
     TipoServicio(
         clave="compartido",
@@ -422,7 +422,7 @@ BoxLayout:
             md_bg_color: 0.20, 0.66, 0.33, 1  # Verde Material (#34A853)
             size_hint_x: 1
             height: dp(60) # Botón más alto y redondeado
-            
+
             on_release: app.iniciar_taximetro()
 
         # Botón Parar (Pause)
