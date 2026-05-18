@@ -98,5 +98,15 @@
     "importe_total": 2.22,
     "conductor": "",
     "servicio": "economico"
+  },
+  {
+    "id": "20260519_012837",
+    "fecha_inicio": "2026-05-19T01:28:37.640349",
+    "fecha_fin": "2026-05-19T01:29:27.901448",
+    "segundos_parado": 37.0,
+    "segundos_movimiento": 13.0,
+    "importe_total": 4.39,
+    "conductor": "",
+    "servicio": "pet"
   }
 ]
