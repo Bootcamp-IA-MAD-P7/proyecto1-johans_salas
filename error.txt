@@ -1,0 +1,32 @@
+[[1;32mINFO[0m   ] [Logger      ] Record log in C:\Users\usuario\.kivy\logs\kivy_26-05-19_2.txt
+[[1;32mINFO[0m   ] [deps        ] Successfully imported "kivy_deps.angle" 0.4.0
+[[1;32mINFO[0m   ] [deps        ] Successfully imported "kivy_deps.glew" 0.3.1
+[[1;32mINFO[0m   ] [deps        ] Successfully imported "kivy_deps.sdl2" 0.8.0
+[[1;32mINFO[0m   ] [Kivy        ] v2.3.1
+[[1;32mINFO[0m   ] [Kivy        ] Installed at "C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\venv\lib\site-packages\kivy\__init__.py"
+[[1;32mINFO[0m   ] [Python      ] v3.10.11 (tags/v3.10.11:7d4cc5a, Apr  5 2023, 00:38:17) [MSC v.1929 64 bit (AMD64)]
+[[1;32mINFO[0m   ] [Python      ] Interpreter at "C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\venv\Scripts\python.exe"
+[[1;32mINFO[0m   ] [Logger      ] Purge log fired. Processing...
+[[1;32mINFO[0m   ] [Logger      ] Purge finished!
+[[1;32mINFO[0m   ] [KivyMD      ] 2.0.1.dev0, git-Unknown, 2026-05-18 (installed at "C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\venv\lib\site-packages\kivymd\__init__.py")
+[[1;32mINFO[0m   ] [Factory     ] 195 symbols loaded
+[[1;32mINFO[0m   ] [Image       ] Providers: img_tex, img_dds, img_sdl2, img_pil (img_ffpyplayer ignored)
+[[1;32mINFO[0m   ] [Text        ] Provider: sdl2
+[[1;32mINFO[0m   ] [Window      ] Provider: sdl2
+[[1;32mINFO[0m   ] [GL          ] Using the "OpenGL" graphics system
+[[1;32mINFO[0m   ] [GL          ] GLEW initialization succeeded
+[[1;32mINFO[0m   ] [GL          ] Backend used <glew>
+[[1;32mINFO[0m   ] [GL          ] OpenGL version <b'4.6.0 - Build 30.0.101.1338'>
+[[1;32mINFO[0m   ] [GL          ] OpenGL vendor <b'Intel'>
+[[1;32mINFO[0m   ] [GL          ] OpenGL renderer <b'Intel(R) HD Graphics 520'>
+[[1;32mINFO[0m   ] [GL          ] OpenGL parsed version: 4, 6
+[[1;32mINFO[0m   ] [GL          ] Shading version <b'4.60 - Build 30.0.101.1338'>
+[[1;32mINFO[0m   ] [GL          ] Texture max size <16384>
+[[1;32mINFO[0m   ] [GL          ] Texture max units <32>
+[[1;32mINFO[0m   ] [Window      ] auto add sdl2 input provider
+[[1;32mINFO[0m   ] [Window      ] virtual keyboard not allowed, single mode, not docked
+[[1;32mINFO[0m   ] [Clipboard   ] Provider: winctypes
+ Traceback (most recent call last):
+   File "C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\taximetro.py", line 31, in <module>
+     from kivymd.uix.button import MDFillRoundFlatIconButton
+ ImportError: cannot import name 'MDFillRoundFlatIconButton' from 'kivymd.uix.button' (C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\venv\lib\site-packages\kivymd\uix\button\__init__.py)
