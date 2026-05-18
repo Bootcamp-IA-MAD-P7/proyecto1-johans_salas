@@ -14,7 +14,7 @@ from datetime import datetime
 # ── Kivy config ANTES de cualquier otro import de Kivy ──────────────────────
 from kivy.config import Config
 Config.set('graphics', 'width',     '450')
-Config.set('graphics', 'height',    '800')
+Config.set('graphics', 'height',    '950')
 Config.set('graphics', 'resizable', False)
 
 from kivymd.app            import MDApp
@@ -39,21 +39,6 @@ from reportlab.lib.units     import cm
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# LOGGING
-# ══════════════════════════════════════════════════════════════════════════════
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    handlers=[
-        logging.FileHandler("taximetro.log", encoding="utf-8"),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger("Taximetro")
-
-
-# ══════════════════════════════════════════════════════════════════════════════
 # RUTAS
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -63,6 +48,26 @@ CONFIG_FILE  = os.path.join(BASE_DIR, "config.json")
 USERS_FILE   = os.path.join(BASE_DIR, "usuarios.json")
 FACTURAS_DIR = os.path.join(BASE_DIR, "facturas")
 os.makedirs(FACTURAS_DIR, exist_ok=True)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# LOGGING
+# ══════════════════════════════════════════════════════════════════════════════
+
+LOG_FILE = os.path.join(BASE_DIR, "taximetro.log")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_FILE, encoding="utf-8"),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger("Taximetro")
+
+logger.info("Sistema de logging iniciado.")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -570,6 +575,8 @@ MDBoxLayout:
 
     MDFillRoundFlatIconButton:
         id: btn_factura
+        opacity: 0
+        disabled: True
         icon: "file-pdf-box"
         text: "Generar Factura PDF"
         font_size: "14sp"
@@ -589,6 +596,7 @@ MDBoxLayout:
 class TaximetroApp(MDApp):
 
     _activo           = False
+    _pausado          = False
     _segundos_parado  = 0.0
     _segs_movimiento  = 0.0
     _importe          = 0.0
@@ -641,18 +649,24 @@ class TaximetroApp(MDApp):
             self.root.ids.lbl_fin.text     = "Fin: --:--:--"
             self.root.ids.lbl_resumen.text = ""
         self._activo = True
+        self._pausado = False
+
         self.root.ids.lbl_estado.text = "EN MOVIMIENTO..."
-        self._clock_event = Clock.schedule_interval(self._tick, 1.0)
+
+        if self._clock_event is None:
+            self._clock_event = Clock.schedule_interval(self._tick, 1.0)
+
         logger.info("Taximetro activado.")
 
     def pausar_taximetro(self):
+
         if not self._activo:
             return
-        self._activo = False
-        if self._clock_event:
-            self._clock_event.cancel()
-            self._clock_event = None
+
+        self._pausado = True
+
         self.root.ids.lbl_estado.text = "PARADO"
+
         logger.info("Taximetro pausado.")
 
     def finalizar_taximetro(self):
@@ -678,25 +692,55 @@ class TaximetroApp(MDApp):
             f"Parado: {int(self._segundos_parado)}s"
         )
         logger.info(f"Trayecto finalizado. {self._importe:.2f} EUR")
+        self.root.ids.btn_factura.opacity = 1
+        self.root.ids.btn_factura.disabled = False
         self._trayecto_actual = None
         self._segundos_parado = 0.0
         self._segs_movimiento = 0.0
-        self._importe         = 0.0
-        Clock.schedule_once(self._resetear_ui, 5.0)
+        self._importe = 0.0
+        self._activo = False
+        self._pausado = False
+        Clock.schedule_once(self._resetear_ui, 30.0)
 
     def _tick(self, dt):
+
+        if self._trayecto_actual is None:
+            return
+
         tarifa = self._gestor_config.tarifa
-        mult   = self._servicio_actual.multiplicador
-        self._segs_movimiento += 1
-        self._importe += tarifa.precio_movimiento * mult
+        mult = self._servicio_actual.multiplicador
+
+        if self._pausado:
+
+            self._segundos_parado += 1
+
+            self._importe += tarifa.precio_parado * mult
+
+        else:
+
+            self._segs_movimiento += 1
+
+            self._importe += tarifa.precio_movimiento * mult
+
         self.root.ids.lbl_precio.text = f"{self._importe:.2f} EUR"
+
         total = int(self._segs_movimiento + self._segundos_parado)
+
         h = total // 3600
         m = (total % 3600) // 60
         s = total % 60
-        self.root.ids.lbl_cronometro.text    = f"{h:02d}h {m:02d}m {s:02d}s"
-        self.root.ids.lbl_t_movimiento.text  = f"Mov: {int(self._segs_movimiento)}s"
-        self.root.ids.lbl_t_parado.text      = f"Parado: {int(self._segundos_parado)}s"
+
+        self.root.ids.lbl_cronometro.text = (
+            f"{h:02d}h {m:02d}m {s:02d}s"
+        )
+
+        self.root.ids.lbl_t_movimiento.text = (
+            f"Mov: {int(self._segs_movimiento)}s"
+        )
+
+        self.root.ids.lbl_t_parado.text = (
+            f"Parado: {int(self._segundos_parado)}s"
+        )
 
     def generar_factura(self):
         if self._ultimo_trayecto is None:

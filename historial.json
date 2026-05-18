@@ -68,5 +68,25 @@
     "importe_total": 5.82,
     "conductor": "",
     "servicio": "flash"
+  },
+  {
+    "id": "20260519_002929",
+    "fecha_inicio": "2026-05-19T00:29:29.841044",
+    "fecha_fin": "2026-05-19T00:30:00.800732",
+    "segundos_parado": 0.0,
+    "segundos_movimiento": 22.0,
+    "importe_total": 2.6,
+    "conductor": "",
+    "servicio": "economico"
+  },
+  {
+    "id": "20260519_003026",
+    "fecha_inicio": "2026-05-19T00:30:26.530669",
+    "fecha_fin": "2026-05-19T00:30:58.355360",
+    "segundos_parado": 0.0,
+    "segundos_movimiento": 23.0,
+    "importe_total": 5.11,
+    "conductor": "",
+    "servicio": "xl"
   }
 ]
