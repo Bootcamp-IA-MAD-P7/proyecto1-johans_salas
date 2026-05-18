@@ -37,6 +37,10 @@ from reportlab.platypus      import (SimpleDocTemplate, Paragraph, Spacer,
 from reportlab.lib.styles    import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units     import cm
 
+# ── INICIO DE SESIÓN ─────────────────────────────────────────────────────────
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.textfield import MDTextField
+from kivymd.uix.button import MDFlatButton
 
 # ══════════════════════════════════════════════════════════════════════════════
 # RUTAS
@@ -238,6 +242,20 @@ class GestorAuth:
     def autenticar(self, usuario, password):
         if usuario in self._usuarios:
             return self._usuarios[usuario]["hash"] == self._hash(password)
+        return False
+    
+    def cambiar_password(self, usuario, nueva_password):
+
+        if usuario in self._usuarios:
+
+            self._usuarios[usuario]["hash"] = (
+             self._hash(nueva_password)
+            )
+
+            self._guardar()
+
+            return True
+
         return False
 
 
@@ -603,8 +621,6 @@ MDBoxLayout:
 
     MDFillRoundFlatIconButton:
         id: btn_factura
-        opacity: 0
-        disabled: True
         icon: "file-pdf-box"
         text: "Generar Factura PDF"
         font_size: "14sp"
@@ -632,6 +648,74 @@ class TaximetroApp(MDApp):
     _servicio_actual  = None
     _trayecto_actual  = None
     _ultimo_trayecto  = None
+    _dialog_login     = None
+    _usuario_actual   = None
+
+    def mostrar_login(self):
+
+        self.user_field = MDTextField(
+            hint_text="Usuario",
+            helper_text="Ingrese usuario",
+            helper_text_mode="on_focus"
+        )
+
+        self.pass_field = MDTextField(
+            hint_text="Contraseña",
+            password=True,
+            helper_text="Ingrese contraseña",
+            helper_text_mode="on_focus"
+        )
+
+        self._dialog_login = MDDialog(
+            title="Iniciar Sesión",
+            type="custom",
+            content_cls=MDBoxLayout(
+                self.user_field,
+                self.pass_field,
+                orientation="vertical",
+                spacing="12dp",
+                size_hint_y=None,
+                height="120dp",
+            ),
+            buttons=[
+                MDFlatButton(
+                    text="LOGIN",
+                    on_release=lambda x: self.validar_login()
+                )
+            ]
+        )
+
+        self._dialog_login.open()
+
+    def validar_login(self):
+
+        usuario = self.user_field.text.strip()
+
+        password = self.pass_field.text.strip()
+
+        if self._gestor_auth.autenticar(usuario, password):
+
+            self._usuario_actual = usuario
+
+            self._dialog_login.dismiss()
+
+            self.root.ids.lbl_resumen.text = (
+            f"Bienvenido {usuario}"
+            )
+
+            logger.info(f"Login exitoso: {usuario}")
+
+        else:
+
+            self.pass_field.error = True
+
+            self.root.ids.lbl_resumen.text = (
+                "Usuario o contraseña incorrectos"
+            )
+
+            logger.warning(
+             f"Intento login fallido: {usuario}"
+            )
 
     def build(self):
         self.theme_cls.theme_style     = "Dark"
@@ -653,6 +737,7 @@ class TaximetroApp(MDApp):
             item.bind(on_release=lambda x, s=servicio: self._seleccionar_servicio(s))
             service_list.add_widget(item)
         logger.info("App iniciada correctamente.")
+        Clock.schedule_once(lambda dt: self.mostrar_login(), 0.5)
 
     def _seleccionar_servicio(self, servicio):
         if self._activo:
@@ -678,7 +763,6 @@ class TaximetroApp(MDApp):
             self.root.ids.lbl_resumen.text = ""
         self._activo = True
         self._pausado = False
-
         self.root.ids.lbl_estado.text = "EN MOVIMIENTO..."
 
         if self._clock_event is None:
@@ -738,10 +822,6 @@ class TaximetroApp(MDApp):
             self.root.ids.lbl_resumen.text = (
                 f"Total: {self._importe:.2f} EUR"
             )
-
-            self.root.ids.btn_factura.opacity = 1
-
-            self.root.ids.btn_factura.disabled = False
 
             logger.info(
                 f"Trayecto finalizado correctamente."
