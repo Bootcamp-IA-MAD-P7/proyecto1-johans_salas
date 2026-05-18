@@ -1,0 +1,52 @@
+[
+  {
+    "id": "20260518190908632192",
+    "fecha_inicio": "18/05/2026 19:09:08",
+    "fecha_fin": "18/05/2026 19:09:35",
+    "segundos_parado": 26.5,
+    "segundos_movimiento": 0.0,
+    "importe_total": 2.03,
+    "conductor": "admin",
+    "servicio": "economico"
+  },
+  {
+    "id": "20260518191013728205",
+    "fecha_inicio": "18/05/2026 19:10:13",
+    "fecha_fin": "18/05/2026 19:10:30",
+    "segundos_parado": 16.2,
+    "segundos_movimiento": 0.0,
+    "importe_total": 3.95,
+    "conductor": "admin",
+    "servicio": "xl"
+  },
+  {
+    "id": "20260518191039929993",
+    "fecha_inicio": "18/05/2026 19:10:39",
+    "fecha_fin": "18/05/2026 19:10:54",
+    "segundos_parado": 14.9,
+    "segundos_movimiento": 0.0,
+    "importe_total": 3.3,
+    "conductor": "admin",
+    "servicio": "pet"
+  },
+  {
+    "id": "20260518191134627303",
+    "fecha_inicio": "18/05/2026 19:11:34",
+    "fecha_fin": "18/05/2026 19:11:52",
+    "segundos_parado": 17.4,
+    "segundos_movimiento": 0.0,
+    "importe_total": 4.92,
+    "conductor": "admin",
+    "servicio": "flash"
+  },
+  {
+    "id": "20260518191159675508",
+    "fecha_inicio": "18/05/2026 19:11:59",
+    "fecha_fin": "18/05/2026 19:12:30",
+    "segundos_parado": 6.9,
+    "segundos_movimiento": 23.6,
+    "importe_total": 2.29,
+    "conductor": "admin",
+    "servicio": "compartido"
+  }
+]
