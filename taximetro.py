@@ -56,16 +56,29 @@ os.makedirs(FACTURAS_DIR, exist_ok=True)
 
 LOG_FILE = os.path.join(BASE_DIR, "taximetro.log")
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_FILE, encoding="utf-8"),
-        logging.StreamHandler()
-    ]
-)
-
 logger = logging.getLogger("Taximetro")
+logger.setLevel(logging.INFO)
+
+if not logger.handlers:
+
+    formatter = logging.Formatter(
+        "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
+
+    file_handler = logging.FileHandler(
+        LOG_FILE,
+        encoding="utf-8"
+    )
+
+    file_handler.setFormatter(formatter)
+
+    console_handler = logging.StreamHandler()
+
+    console_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+
+    logger.addHandler(console_handler)
 
 logger.info("Sistema de logging iniciado.")
 
@@ -151,8 +164,23 @@ class GestorConfig:
         return Tarifa()
 
     def guardar(self):
-        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-            json.dump(self._tarifa.to_dict(), f, indent=2)
+
+        try:
+            
+            with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+             
+                json.dump(
+                    [t.to_dict() for t in self._trayectos],
+                    f,
+                    indent=2,
+                    ensure_ascii=False
+                )
+
+            logger.info("Historial guardado correctamente.")
+
+        except Exception as e:
+
+            logger.error(f"Error guardando historial: {e}")
 
     @property
     def tarifa(self): return self._tarifa
@@ -670,37 +698,74 @@ class TaximetroApp(MDApp):
         logger.info("Taximetro pausado.")
 
     def finalizar_taximetro(self):
-        if self._trayecto_actual is None:
-            return
-        if self._activo:
-            self._activo = False
+
+        try:
+
+            if self._trayecto_actual is None:
+                return
+
             if self._clock_event:
+
                 self._clock_event.cancel()
+
                 self._clock_event = None
-        ahora = datetime.now()
-        self._trayecto_actual.fecha_fin           = ahora.isoformat()
-        self._trayecto_actual.segundos_parado     = self._segundos_parado
-        self._trayecto_actual.segundos_movimiento = self._segs_movimiento
-        self._trayecto_actual.importe_total       = round(self._importe, 2)
-        self._gestor_historial.agregar(self._trayecto_actual)
-        self._ultimo_trayecto = self._trayecto_actual
-        self.root.ids.lbl_fin.text     = f"Fin: {ahora.strftime('%H:%M:%S')}"
-        self.root.ids.lbl_estado.text  = "FINALIZADO"
-        self.root.ids.lbl_resumen.text = (
-            f"Total: {self._importe:.2f} EUR  |  "
-            f"Mov: {int(self._segs_movimiento)}s  |  "
-            f"Parado: {int(self._segundos_parado)}s"
-        )
-        logger.info(f"Trayecto finalizado. {self._importe:.2f} EUR")
-        self.root.ids.btn_factura.opacity = 1
-        self.root.ids.btn_factura.disabled = False
-        self._trayecto_actual = None
-        self._segundos_parado = 0.0
-        self._segs_movimiento = 0.0
-        self._importe = 0.0
-        self._activo = False
-        self._pausado = False
-        Clock.schedule_once(self._resetear_ui, 30.0)
+
+            ahora = datetime.now()
+
+            self._trayecto_actual.fecha_fin = ahora.isoformat()
+
+            self._trayecto_actual.segundos_parado = self._segundos_parado
+
+            self._trayecto_actual.segundos_movimiento = self._segs_movimiento
+
+            self._trayecto_actual.importe_total = round(
+                self._importe,
+                2
+            )
+
+            self._gestor_historial.agregar(
+                self._trayecto_actual
+            )
+
+            self._ultimo_trayecto = self._trayecto_actual
+
+            self.root.ids.lbl_fin.text = (
+                f"Fin: {ahora.strftime('%H:%M:%S')}"
+            )
+
+            self.root.ids.lbl_estado.text = "FINALIZADO"
+
+            self.root.ids.lbl_resumen.text = (
+                f"Total: {self._importe:.2f} EUR"
+            )
+
+            self.root.ids.btn_factura.opacity = 1
+
+            self.root.ids.btn_factura.disabled = False
+
+            logger.info(
+                f"Trayecto finalizado correctamente."
+            )
+
+            self._trayecto_actual = None
+
+            self._segundos_parado = 0.0
+
+            self._segs_movimiento = 0.0
+
+            self._importe = 0.0
+
+            self._activo = False
+
+            self._pausado = False
+
+        except Exception as e:
+
+            logger.error(f"Error finalizando trayecto: {e}")
+
+            self.root.ids.lbl_resumen.text = (
+                f"Error al finalizar: {e}"
+            )
 
     def _tick(self, dt):
 

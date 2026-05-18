@@ -88,5 +88,15 @@
     "importe_total": 5.11,
     "conductor": "",
     "servicio": "xl"
+  },
+  {
+    "id": "20260519_011025",
+    "fecha_inicio": "2026-05-19T01:10:25.135633",
+    "fecha_fin": "2026-05-19T01:10:46.780372",
+    "segundos_parado": 11.0,
+    "segundos_movimiento": 10.0,
+    "importe_total": 2.22,
+    "conductor": "",
+    "servicio": "economico"
   }
 ]
