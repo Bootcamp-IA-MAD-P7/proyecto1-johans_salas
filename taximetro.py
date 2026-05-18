@@ -14,7 +14,7 @@ from datetime import datetime
 # ── Kivy config ANTES de cualquier otro import de Kivy ──────────────────────
 from kivy.config import Config
 Config.set('graphics', 'width',     '450')
-Config.set('graphics', 'height',    '950')
+Config.set('graphics', 'height',    '780')
 Config.set('graphics', 'resizable', False)
 
 from kivymd.app            import MDApp
@@ -372,26 +372,26 @@ KV = '''
 
 MDBoxLayout:
     orientation: "vertical"
-    padding: dp(16)
-    spacing: dp(10)
+    padding: dp(10)
+    spacing: dp(6)
     md_bg_color: 0.07, 0.07, 0.12, 1
 
     MDBoxLayout:
         orientation: "horizontal"
         size_hint_y: None
-        height: dp(72)
+        height: dp(56)
         spacing: dp(12)
         padding: [dp(4), 0, 0, 0]
         MDIcon:
             icon: "taxi"
             size_hint: None, None
-            size: dp(48), dp(48)
+            size: dp(36), dp(36)
             pos_hint: {"center_y": .5}
             theme_text_color: "Custom"
             text_color: 1.0, 0.82, 0.0, 1
         MDLabel:
             text: "Taximetro Digital"
-            font_style: "H4"
+            font_style: "H5"
             pos_hint: {"center_y": .5}
             theme_text_color: "Custom"
             text_color: 1, 1, 1, 1
@@ -410,7 +410,7 @@ MDBoxLayout:
         text_color: 1, 1, 1, 1
 
     ScrollView:
-        size_hint_y: 0.28
+        size_hint_y: 0.22
         MDList:
             id: service_list
             canvas.before:
@@ -430,7 +430,7 @@ MDBoxLayout:
         padding: [dp(14), dp(8), dp(14), dp(8)]
         spacing: dp(2)
         size_hint_y: None
-        height: dp(155)
+        height: dp(130)
         radius: [dp(16)]
         elevation: 4
         md_bg_color: 0.12, 0.12, 0.22, 1
@@ -546,7 +546,7 @@ MDBoxLayout:
             md_bg_color: 0.13, 0.70, 0.37, 1
             text_color: 1, 1, 1, 1
             size_hint_x: 1
-            height: dp(58)
+            height: dp(48)
             on_release: app.iniciar_taximetro()
 
         MDFillRoundFlatIconButton:
@@ -558,7 +558,7 @@ MDBoxLayout:
             md_bg_color: 0.95, 0.76, 0.05, 1
             text_color: 0.10, 0.10, 0.10, 1
             size_hint_x: 1
-            height: dp(58)
+            height: dp(48)
             on_release: app.pausar_taximetro()
 
         MDFillRoundFlatIconButton:
@@ -570,7 +570,7 @@ MDBoxLayout:
             md_bg_color: 0.88, 0.20, 0.18, 1
             text_color: 1, 1, 1, 1
             size_hint_x: 1
-            height: dp(58)
+            height: dp(48)
             on_release: app.finalizar_taximetro()
 
     MDFillRoundFlatIconButton:
@@ -584,7 +584,7 @@ MDBoxLayout:
         md_bg_color: 0.20, 0.35, 0.75, 1
         text_color: 1, 1, 1, 1
         size_hint_x: 1
-        height: dp(50)
+        height: dp(42)
         on_release: app.generar_factura()
 '''
 
