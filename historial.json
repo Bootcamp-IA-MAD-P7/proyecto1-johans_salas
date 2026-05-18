@@ -48,5 +48,25 @@
     "importe_total": 2.29,
     "conductor": "admin",
     "servicio": "compartido"
+  },
+  {
+    "id": "20260519_000655",
+    "fecha_inicio": "2026-05-19T00:06:55.222760",
+    "fecha_fin": "2026-05-19T00:07:21.256332",
+    "segundos_parado": 0.0,
+    "segundos_movimiento": 19.0,
+    "importe_total": 2.45,
+    "conductor": "",
+    "servicio": "economico"
+  },
+  {
+    "id": "20260519_000749",
+    "fecha_inicio": "2026-05-19T00:07:49.670131",
+    "fecha_fin": "2026-05-19T00:08:18.274158",
+    "segundos_parado": 0.0,
+    "segundos_movimiento": 22.0,
+    "importe_total": 5.82,
+    "conductor": "",
+    "servicio": "flash"
   }
 ]

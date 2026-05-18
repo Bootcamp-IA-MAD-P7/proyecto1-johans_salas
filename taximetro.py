@@ -4,45 +4,42 @@
 # Creado por: Johans Enrique Salas Rodríguez
 # ══════════════════════════════════════════════════════════════════════════════
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# LIBRERÍAS
-# ══════════════════════════════════════════════════════════════════════════════
-
 import os
 import json
 import logging
 import hashlib
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from datetime import datetime
 
-# Configuración de KivyMD y Kivy
+# ── Kivy config ANTES de cualquier otro import de Kivy ──────────────────────
 from kivy.config import Config
-# Configurar la ventana ANTES de importar cualquier otro módulo de Kivy/KivyMD
-Config.set('graphics', 'width', '450')
-Config.set('graphics', 'height', '750')
+Config.set('graphics', 'width',     '450')
+Config.set('graphics', 'height',    '800')
 Config.set('graphics', 'resizable', False)
 
-from kivymd.app import MDApp
-from kivy.lang import Builder
-from kivy.clock import Clock                          # FIX: faltaba este import
-from kivy.uix.boxlayout import BoxLayout
-from kivymd.uix.boxlayout import MDBoxLayout          # FIX: import explícito
-from kivymd.uix.button import MDFillRoundFlatIconButton
-from kivymd.uix.label import MDLabel, MDIcon          # FIX: MDIcon también
-from kivymd.uix.list import (                         # FIX: agregar IconLeftWidget
-    OneLineAvatarListItem,
-    ILeftBodyTouch,
-    IconLeftWidget,
-)
-from kivymd.uix.card import MDCard, MDSeparator       # FIX: MDSeparator viene de card
-from kivymd.uix.selectioncontrol import MDCheckbox
-from kivy.properties import StringProperty, NumericProperty, ListProperty, ObjectProperty
-from kivy.metrics import dp
+from kivymd.app            import MDApp
+from kivy.lang             import Builder
+from kivy.clock            import Clock
+from kivy.uix.boxlayout    import BoxLayout
+from kivymd.uix.boxlayout  import MDBoxLayout
+from kivymd.uix.button     import MDFillRoundFlatIconButton
+from kivymd.uix.label      import MDLabel, MDIcon
+from kivymd.uix.list       import OneLineAvatarListItem, ILeftBodyTouch, IconLeftWidget
+from kivymd.uix.card       import MDCard, MDSeparator
+from kivy.properties       import StringProperty, ListProperty
+from kivy.metrics          import dp
+
+# ── PDF ──────────────────────────────────────────────────────────────────────
+from reportlab.lib.pagesizes import A4
+from reportlab.lib           import colors
+from reportlab.platypus      import (SimpleDocTemplate, Paragraph, Spacer,
+                                     Table, TableStyle, HRFlowable)
+from reportlab.lib.styles    import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units     import cm
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# CONFIGURACIÓN DE LOGGING
+# LOGGING
 # ══════════════════════════════════════════════════════════════════════════════
 
 logging.basicConfig(
@@ -57,13 +54,15 @@ logger = logging.getLogger("Taximetro")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# RUTAS DE ARCHIVOS
+# RUTAS
 # ══════════════════════════════════════════════════════════════════════════════
 
 BASE_DIR     = os.path.dirname(os.path.abspath(__file__))
 HISTORY_FILE = os.path.join(BASE_DIR, "historial.json")
 CONFIG_FILE  = os.path.join(BASE_DIR, "config.json")
 USERS_FILE   = os.path.join(BASE_DIR, "usuarios.json")
+FACTURAS_DIR = os.path.join(BASE_DIR, "facturas")
+os.makedirs(FACTURAS_DIR, exist_ok=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -72,78 +71,59 @@ USERS_FILE   = os.path.join(BASE_DIR, "usuarios.json")
 
 @dataclass
 class Tarifa:
-    """Tarifas configurables del taxímetro."""
-    precio_parado: float      = 0.02   # €/segundo parado
-    precio_movimiento: float  = 0.05   # €/segundo en movimiento
-    precio_bajada_bandera: float = 1.50  # Precio inicial al arrancar
+    precio_parado:         float = 0.02
+    precio_movimiento:     float = 0.05
+    precio_bajada_bandera: float = 1.50
 
-    def to_dict(self):
-        return asdict(self)
-
+    def to_dict(self):     return asdict(self)
     @classmethod
-    def from_dict(cls, d: dict):
-        return cls(**d)
+    def from_dict(cls, d): return cls(**d)
 
 
 @dataclass
 class TipoServicio:
-    """Define un tipo de servicio con su lógica de precio."""
-    clave: str
-    nombre: str
-    icon_name: str
-    descripcion: str
-    cargo_fijo: float
+    clave:         str
+    nombre:        str
+    icon_name:     str
+    descripcion:   str
+    cargo_fijo:    float
     multiplicador: float
-    color_name: str
-
-    def cargo_extra_display(self) -> str:
-        partes = []
-        if self.cargo_fijo > 0:
-            partes.append(f"+{self.cargo_fijo:.2f}€ fijo")
-        if self.multiplicador != 1.0:
-            partes.append(f"x{self.multiplicador} tarifa")
-        return " · ".join(partes) if partes else "Sin cargo extra"
+    color_name:    str
 
 
-# Catálogo de servicios disponibles
-SERVICIOS: list = [
-    TipoServicio("economico", "Económico",   "car",              "Tarifa estándar sin recargos",    0.0,  1.0, "Gray"),
-    TipoServicio("xl",        "XL / Familiar","account-group",   "Vehículo de mayor capacidad",     2.00, 1.4, "Blue"),
-    TipoServicio("compartido","Compartido",   "account-multiple", "Viaje compartido, precio reducido",0.0, 0.6, "Teal"),
-    TipoServicio("pet",       "Pet Friendly", "paw",             "Mascotas permitidas",             1.50, 1.0, "Orange"),
-    TipoServicio("flash",     "Flash",        "lightning-bolt",  "Recogida prioritaria más rápida", 3.00, 1.2, "Amber"),
+SERVICIOS = [
+    TipoServicio("economico",  "Economico",    "car",              "Tarifa estandar",            0.0,  1.0, "White"),
+    TipoServicio("xl",         "XL / Familiar","account-group",    "Vehiculo de mayor capacidad", 2.00, 1.4, "Blue"),
+    TipoServicio("compartido", "Compartido",   "account-multiple", "Viaje compartido",            0.0,  0.6, "Teal"),
+    TipoServicio("pet",        "Pet Friendly", "paw",              "Mascotas permitidas",         1.50, 1.0, "Orange"),
+    TipoServicio("flash",      "Flash",        "lightning-bolt",   "Recogida prioritaria",        3.00, 1.2, "Amber"),
 ]
 
-# Colores RGBA para KivyMD
 COLORES = {
-    "Gray":   [0.5,  0.5,  0.5,  1],
-    "Blue":   [0.1,  0.4,  0.9,  1],
-    "Teal":   [0.0,  0.5,  0.5,  1],
-    "Orange": [1.0,  0.5,  0.0,  1],
-    "Amber":  [1.0,  0.75, 0.0,  1],
+    "White":  [1.0,  1.0,  1.0,  1],
+    "Blue":   [0.25, 0.55, 1.0,  1],
+    "Teal":   [0.0,  0.75, 0.75, 1],
+    "Orange": [1.0,  0.6,  0.1,  1],
+    "Amber":  [1.0,  0.82, 0.0,  1],
 }
 
-# Mapa para acceso rápido por clave
-SERVICIOS_MAP: dict = {s.clave: s for s in SERVICIOS}
+SERVICIOS_MAP = {s.clave: s for s in SERVICIOS}
 
 
 @dataclass
 class Trayecto:
-    """Representa un trayecto completo."""
-    id: str
-    fecha_inicio: str
-    fecha_fin: str             = ""
-    segundos_parado: float     = 0.0
+    id:                  str
+    fecha_inicio:        str
+    fecha_fin:           str   = ""
+    segundos_parado:     float = 0.0
     segundos_movimiento: float = 0.0
-    importe_total: float       = 0.0
-    conductor: str             = ""
-    servicio: str              = "economico"
+    importe_total:       float = 0.0
+    conductor:           str   = ""
+    servicio:            str   = "economico"
 
-    def to_dict(self):
-        return asdict(self)
-
+    def to_dict(self):     return asdict(self)
     @classmethod
-    def from_dict(cls, d: dict):
+    def from_dict(cls, d):
         d.setdefault("servicio", "economico")
         return cls(**d)
 
@@ -153,363 +133,502 @@ class Trayecto:
 # ══════════════════════════════════════════════════════════════════════════════
 
 class GestorConfig:
-    """Gestiona la configuración de tarifas."""
-
     def __init__(self):
         self._tarifa = self._cargar()
 
-    def _cargar(self) -> Tarifa:
+    def _cargar(self):
         if os.path.exists(CONFIG_FILE):
             try:
                 with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                logger.info("Configuración cargada desde archivo.")
-                return Tarifa.from_dict(data)
+                    return Tarifa.from_dict(json.load(f))
             except Exception as e:
-                logger.warning(f"Error cargando config: {e}. Usando valores por defecto.")
+                logger.warning(f"Config error: {e}")
         return Tarifa()
 
     def guardar(self):
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(self._tarifa.to_dict(), f, indent=2)
-        logger.info("Configuración guardada.")
 
     @property
-    def tarifa(self) -> Tarifa:
-        return self._tarifa
-
-    def actualizar(self, parado: float, movimiento: float, bandera: float):
-        self._tarifa.precio_parado      = parado
-        self._tarifa.precio_movimiento  = movimiento
-        self._tarifa.precio_bajada_bandera = bandera
-        self.guardar()
-        logger.info(f"Tarifas actualizadas: parado={parado}, movimiento={movimiento}, bandera={bandera}")
+    def tarifa(self): return self._tarifa
 
 
 class GestorHistorial:
-    """Gestiona el historial de trayectos."""
-
     def __init__(self):
-        self._trayectos: list = self._cargar()
+        self._trayectos = self._cargar()
 
-    def _cargar(self) -> list:
+    def _cargar(self):
         if os.path.exists(HISTORY_FILE):
             try:
                 with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                return [Trayecto.from_dict(t) for t in data]
+                    return [Trayecto.from_dict(t) for t in json.load(f)]
             except Exception as e:
-                logger.warning(f"Error cargando historial: {e}")
+                logger.warning(f"Historial error: {e}")
         return []
 
     def guardar(self):
         with open(HISTORY_FILE, "w", encoding="utf-8") as f:
             json.dump([t.to_dict() for t in self._trayectos], f, indent=2, ensure_ascii=False)
 
-    def agregar(self, trayecto: Trayecto):
+    def agregar(self, trayecto):
         self._trayectos.append(trayecto)
         self.guardar()
-        logger.info(f"Trayecto {trayecto.id} guardado. Total: {trayecto.importe_total:.2f}€")
 
     @property
-    def trayectos(self) -> list:
-        return self._trayectos
-
-    def total_recaudado(self) -> float:
-        return sum(t.importe_total for t in self._trayectos)
+    def trayectos(self): return self._trayectos
 
 
 class GestorAuth:
-    """Sistema de autenticación con contraseñas hasheadas."""
-
     def __init__(self):
-        self._usuarios: dict = self._cargar()
+        self._usuarios = self._cargar()
         if not self._usuarios:
-            self._crear_usuario_default()
+            self._crear_default()
 
-    def _cargar(self) -> dict:
+    def _cargar(self):
         if os.path.exists(USERS_FILE):
             try:
                 with open(USERS_FILE, "r", encoding="utf-8") as f:
                     return json.load(f)
-            except Exception as e:
-                logger.warning(f"Error cargando usuarios: {e}")
+            except: pass
         return {}
 
     def _guardar(self):
         with open(USERS_FILE, "w", encoding="utf-8") as f:
             json.dump(self._usuarios, f, indent=2)
 
-    def _hash(self, password: str) -> str:
-        return hashlib.sha256(password.encode()).hexdigest()
+    def _hash(self, p): return hashlib.sha256(p.encode()).hexdigest()
 
-    def _crear_usuario_default(self):
+    def _crear_default(self):
         self._usuarios["admin"] = {"hash": self._hash("1234"), "rol": "admin"}
         self._guardar()
-        logger.info("Usuario por defecto creado: admin/1234")
 
-    def autenticar(self, usuario: str, password: str) -> bool:
+    def autenticar(self, usuario, password):
         if usuario in self._usuarios:
-            ok = self._usuarios[usuario]["hash"] == self._hash(password)
-            if ok:
-                logger.info(f"Acceso concedido a '{usuario}'.")
-            else:
-                logger.warning(f"Contraseña incorrecta para '{usuario}'.")
-            return ok
-        logger.warning(f"Usuario '{usuario}' no encontrado.")
+            return self._usuarios[usuario]["hash"] == self._hash(password)
         return False
 
-    def cambiar_password(self, usuario: str, nueva: str):
-        if usuario in self._usuarios:
-            self._usuarios[usuario]["hash"] = self._hash(nueva)
-            self._guardar()
-            logger.info(f"Contraseña cambiada para '{usuario}'.")
+
+# ══════════════════════════════════════════════════════════════════════════════
+# GENERADOR DE FACTURAS PDF
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generar_factura_pdf(trayecto: Trayecto, servicio: TipoServicio, tarifa: Tarifa) -> str:
+    nombre_archivo = f"factura_{trayecto.id}.pdf"
+    ruta = os.path.join(FACTURAS_DIR, nombre_archivo)
+
+    doc = SimpleDocTemplate(
+        ruta, pagesize=A4,
+        rightMargin=2*cm, leftMargin=2*cm,
+        topMargin=2*cm,   bottomMargin=2*cm,
+    )
+    styles = getSampleStyleSheet()
+    story  = []
+
+    estilo_titulo = ParagraphStyle("titulo", parent=styles["Title"],
+        fontSize=22, textColor=colors.HexColor("#1a1a2e"), spaceAfter=6)
+    estilo_subtitulo = ParagraphStyle("subtitulo", parent=styles["Normal"],
+        fontSize=11, textColor=colors.HexColor("#555555"), spaceAfter=4)
+
+    story.append(Paragraph("TAXIMETRO DIGITAL", estilo_titulo))
+    story.append(Paragraph("Factura de Trayecto", estilo_subtitulo))
+    story.append(HRFlowable(width="100%", thickness=2,
+                            color=colors.HexColor("#1a1a2e"), spaceAfter=12))
+
+    def fmt_fecha(iso):
+        try:    return datetime.fromisoformat(iso).strftime("%d/%m/%Y  %H:%M:%S")
+        except: return iso
+
+    total_segs = int(trayecto.segundos_parado + trayecto.segundos_movimiento)
+    h = total_segs // 3600
+    m = (total_segs % 3600) // 60
+    s = total_segs % 60
+    duracion_str = f"{h:02d}h {m:02d}m {s:02d}s"
+
+    datos = [
+        ["CONCEPTO",             "DETALLE"],
+        ["Nro. de Trayecto",     trayecto.id],
+        ["Tipo de Servicio",     servicio.nombre],
+        ["Inicio del viaje",     fmt_fecha(trayecto.fecha_inicio)],
+        ["Fin del viaje",        fmt_fecha(trayecto.fecha_fin)],
+        ["Duracion total",       duracion_str],
+        ["Tiempo en movimiento", f"{int(trayecto.segundos_movimiento)}s"],
+        ["Tiempo parado",        f"{int(trayecto.segundos_parado)}s"],
+    ]
+
+    tabla = Table(datos, colWidths=[6*cm, 10*cm])
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND",     (0,0),(-1,0), colors.HexColor("#1a1a2e")),
+        ("TEXTCOLOR",      (0,0),(-1,0), colors.white),
+        ("FONTNAME",       (0,0),(-1,0), "Helvetica-Bold"),
+        ("FONTSIZE",       (0,0),(-1,0), 10),
+        ("ALIGN",          (0,0),(-1,0), "CENTER"),
+        ("FONTSIZE",       (0,1),(-1,-1), 9),
+        ("FONTNAME",       (0,1),(0,-1),  "Helvetica-Bold"),
+        ("TEXTCOLOR",      (0,1),(0,-1),  colors.HexColor("#1a1a2e")),
+        ("ROWBACKGROUNDS", (0,1),(-1,-1), [colors.HexColor("#f5f5f5"), colors.white]),
+        ("GRID",           (0,0),(-1,-1), 0.5, colors.HexColor("#cccccc")),
+        ("TOPPADDING",     (0,0),(-1,-1), 6),
+        ("BOTTOMPADDING",  (0,0),(-1,-1), 6),
+        ("LEFTPADDING",    (0,0),(-1,-1), 8),
+    ]))
+    story.append(tabla)
+    story.append(Spacer(1, 16))
+
+    story.append(HRFlowable(width="100%", thickness=1,
+                            color=colors.HexColor("#aaaaaa"), spaceAfter=8))
+    story.append(Paragraph("Desglose de tarifas", estilo_subtitulo))
+
+    coste_mov    = trayecto.segundos_movimiento * tarifa.precio_movimiento * servicio.multiplicador
+    coste_parado = trayecto.segundos_parado     * tarifa.precio_parado     * servicio.multiplicador
+
+    desglose = [
+        ["Concepto",                              "Importe"],
+        ["Bajada de bandera",                     f"{tarifa.precio_bajada_bandera:.2f} EUR"],
+        [f"Cargo fijo ({servicio.nombre})",       f"{servicio.cargo_fijo:.2f} EUR"],
+        [f"Tiempo movimiento x{servicio.multiplicador}", f"{coste_mov:.2f} EUR"],
+        [f"Tiempo parado x{servicio.multiplicador}",     f"{coste_parado:.2f} EUR"],
+    ]
+    td = Table(desglose, colWidths=[10*cm, 6*cm])
+    td.setStyle(TableStyle([
+        ("BACKGROUND",    (0,0),(-1,0), colors.HexColor("#2c2c54")),
+        ("TEXTCOLOR",     (0,0),(-1,0), colors.white),
+        ("FONTNAME",      (0,0),(-1,0), "Helvetica-Bold"),
+        ("ALIGN",         (1,0),(1,-1), "RIGHT"),
+        ("ROWBACKGROUNDS",(0,1),(-1,-1),[colors.HexColor("#f5f5f5"), colors.white]),
+        ("GRID",          (0,0),(-1,-1), 0.5, colors.HexColor("#cccccc")),
+        ("FONTSIZE",      (0,0),(-1,-1), 9),
+        ("TOPPADDING",    (0,0),(-1,-1), 6),
+        ("BOTTOMPADDING", (0,0),(-1,-1), 6),
+        ("LEFTPADDING",   (0,0),(-1,-1), 8),
+    ]))
+    story.append(td)
+    story.append(Spacer(1, 20))
+
+    story.append(HRFlowable(width="100%", thickness=2,
+                            color=colors.HexColor("#1a1a2e"), spaceAfter=10))
+    tt = Table([["TOTAL A PAGAR", f"{trayecto.importe_total:.2f} EUR"]],
+               colWidths=[10*cm, 6*cm])
+    tt.setStyle(TableStyle([
+        ("BACKGROUND",   (0,0),(-1,-1), colors.HexColor("#1a1a2e")),
+        ("TEXTCOLOR",    (0,0),(-1,-1), colors.white),
+        ("FONTNAME",     (0,0),(-1,-1), "Helvetica-Bold"),
+        ("FONTSIZE",     (0,0),(-1,-1), 14),
+        ("ALIGN",        (1,0),(1,0),   "RIGHT"),
+        ("TOPPADDING",   (0,0),(-1,-1), 10),
+        ("BOTTOMPADDING",(0,0),(-1,-1), 10),
+        ("LEFTPADDING",  (0,0),(-1,-1), 12),
+        ("RIGHTPADDING", (0,0),(-1,-1), 12),
+    ]))
+    story.append(tt)
+    story.append(Spacer(1, 30))
+    story.append(HRFlowable(width="100%", thickness=1,
+                            color=colors.HexColor("#aaaaaa"), spaceAfter=6))
+    story.append(Paragraph(
+        "Gracias por utilizar Taximetro Digital · Factura generada automaticamente",
+        ParagraphStyle("pie", parent=styles["Normal"],
+                       fontSize=8, textColor=colors.grey, alignment=1)
+    ))
+    doc.build(story)
+    logger.info(f"Factura PDF generada: {ruta}")
+    return ruta
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# WIDGETS PERSONALIZADOS
+# WIDGET PERSONALIZADO
 # ══════════════════════════════════════════════════════════════════════════════
 
-# FIX: La clase debe definirse ANTES de cargar el KV string para que
-#      el parser KV encuentre la regla <ServiceListItem> correctamente.
 class ServiceListItem(OneLineAvatarListItem):
-    """Ítem de la lista de servicios con icono coloreado."""
     icon_name     = StringProperty("car")
     service_name  = StringProperty("")
-    service_color = ListProperty([0, 0, 0, 1])
+    service_color = ListProperty([1, 1, 1, 1])
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# INTERFAZ DE USUARIO (KivyMD - lenguaje KV)
+# KV — INTERFAZ MODO OSCURO
 # ══════════════════════════════════════════════════════════════════════════════
 
 KV = '''
 #:import dp kivy.metrics.dp
 
-# ── Regla de clase para el ítem de la lista ──────────────────────────────────
-# FIX: "IconLeftWidget" es el widget correcto (no ILeftBodyTouch genérico)
 <ServiceListItem>:
     text: root.service_name
-
+    theme_text_color: "Custom"
+    text_color: 1, 1, 1, 1
+    canvas.before:
+        Color:
+            rgba: 0.12, 0.12, 0.18, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
     IconLeftWidget:
         icon: root.icon_name
         theme_text_color: "Custom"
         text_color: root.service_color
 
-# ── Pantalla principal (raíz del árbol KV) ───────────────────────────────────
-# FIX: El widget raíz es MDBoxLayout (no BoxLayout anónimo).
-#      Esto permite que app.root.ids funcione correctamente.
 MDBoxLayout:
     orientation: "vertical"
-    padding: dp(20)
-    spacing: dp(12)
+    padding: dp(16)
+    spacing: dp(10)
+    md_bg_color: 0.07, 0.07, 0.12, 1
 
-    # ── ENCABEZADO ──────────────────────────────────────────────────────────
     MDBoxLayout:
         orientation: "horizontal"
         size_hint_y: None
-        height: dp(56)
-        spacing: dp(10)
-
+        height: dp(72)
+        spacing: dp(12)
+        padding: [dp(4), 0, 0, 0]
         MDIcon:
             icon: "taxi"
             size_hint: None, None
-            size: dp(32), dp(32)
+            size: dp(48), dp(48)
             pos_hint: {"center_y": .5}
-            theme_text_color: "Primary"
-
+            theme_text_color: "Custom"
+            text_color: 1.0, 0.82, 0.0, 1
         MDLabel:
-            text: "Taxímetro Digital"
-            font_style: "H5"
+            text: "Taximetro Digital"
+            font_style: "H4"
             pos_hint: {"center_y": .5}
-            theme_text_color: "Primary"
+            theme_text_color: "Custom"
+            text_color: 1, 1, 1, 1
 
-    # FIX: MDSeparator se importa desde kivymd.uix.card en Python,
-    #      pero en KV se referencia por nombre de clase directamente.
-    MDSeparator:
+    MDBoxLayout:
+        size_hint_y: None
+        height: dp(1)
+        md_bg_color: 1, 1, 1, 0.3
 
-    # ── SELECTOR DE SERVICIOS ────────────────────────────────────────────────
     MDLabel:
         text: "Tipo de Servicio"
         font_style: "H6"
-        theme_text_color: "Secondary"
         size_hint_y: None
         height: dp(28)
+        theme_text_color: "Custom"
+        text_color: 1, 1, 1, 1
 
     ScrollView:
-        size_hint_y: 0.35
+        size_hint_y: 0.28
         MDList:
-            id: service_list   # FIX: id accesible desde app.root.ids.service_list
+            id: service_list
+            canvas.before:
+                Color:
+                    rgba: 0.12, 0.12, 0.18, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
 
-    MDSeparator:
+    MDBoxLayout:
+        size_hint_y: None
+        height: dp(1)
+        md_bg_color: 1, 1, 1, 0.3
 
-    # ── TARJETA DE ESTADO Y PRECIO ───────────────────────────────────────────
     MDCard:
         orientation: "vertical"
-        padding: dp(15)
+        padding: [dp(14), dp(8), dp(14), dp(8)]
+        spacing: dp(2)
         size_hint_y: None
-        height: dp(130)
-        radius: [dp(15)]
-        elevation: 3
+        height: dp(155)
+        radius: [dp(16)]
+        elevation: 4
+        md_bg_color: 0.12, 0.12, 0.22, 1
 
         MDBoxLayout:
             orientation: "horizontal"
-            spacing: dp(8)
             size_hint_y: None
-            height: dp(30)
-
+            height: dp(26)
+            spacing: dp(8)
             MDIcon:
                 icon: "navigation"
                 size_hint: None, None
-                size: dp(24), dp(24)
-                theme_text_color: "Secondary"
-
+                size: dp(20), dp(20)
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 0.7
             MDLabel:
-                id: lbl_estado          # FIX: id para actualizar estado
-                text: "Esperando..."
+                id: lbl_estado
+                text: "ESPERANDO..."
                 font_style: "Button"
-                theme_text_color: "Secondary"
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 0.85
 
         MDLabel:
-            id: lbl_precio             # FIX: id para actualizar precio
-            text: "0.00 €"
+            id: lbl_precio
+            text: "0.00 EUR"
             font_style: "H3"
             halign: "center"
-            theme_text_color: "Primary"
+            theme_text_color: "Custom"
+            text_color: 1.0, 0.82, 0.0, 1
 
         MDLabel:
-            id: lbl_servicio           # FIX: id para mostrar servicio activo
-            text: "Servicio: Económico"
+            id: lbl_servicio
+            text: "Servicio: Economico"
             font_style: "Caption"
             halign: "center"
-            theme_text_color: "Secondary"
+            theme_text_color: "Custom"
+            text_color: 1, 1, 1, 0.65
 
-    # ── BOTONES DE ACCIÓN ────────────────────────────────────────────────────
+        MDLabel:
+            id: lbl_cronometro
+            text: "00h 00m 00s"
+            font_style: "Caption"
+            halign: "center"
+            theme_text_color: "Custom"
+            text_color: 1, 1, 1, 0.65
+
+    MDCard:
+        orientation: "vertical"
+        padding: [dp(14), dp(6), dp(14), dp(6)]
+        size_hint_y: None
+        height: dp(90)
+        radius: [dp(12)]
+        elevation: 2
+        md_bg_color: 0.10, 0.10, 0.18, 1
+
+        MDBoxLayout:
+            orientation: "horizontal"
+            spacing: dp(4)
+            MDLabel:
+                id: lbl_inicio
+                text: "Inicio: --:--:--"
+                font_style: "Caption"
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 0.7
+                halign: "center"
+            MDLabel:
+                id: lbl_fin
+                text: "Fin: --:--:--"
+                font_style: "Caption"
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 0.7
+                halign: "center"
+
+        MDBoxLayout:
+            orientation: "horizontal"
+            spacing: dp(4)
+            MDLabel:
+                id: lbl_t_movimiento
+                text: "Mov: 0s"
+                font_style: "Caption"
+                theme_text_color: "Custom"
+                text_color: 0.20, 0.85, 0.45, 1
+                halign: "center"
+            MDLabel:
+                id: lbl_t_parado
+                text: "Parado: 0s"
+                font_style: "Caption"
+                theme_text_color: "Custom"
+                text_color: 1.0, 0.82, 0.0, 1
+                halign: "center"
+
+        MDLabel:
+            id: lbl_resumen
+            text: ""
+            font_style: "Caption"
+            halign: "center"
+            theme_text_color: "Custom"
+            text_color: 0.4, 0.9, 0.5, 1
+
     MDBoxLayout:
         orientation: "horizontal"
-        spacing: dp(12)
+        spacing: dp(10)
         size_hint_y: None
-        height: dp(70)
-        padding: [0, dp(8), 0, 0]
+        height: dp(68)
+        padding: [0, dp(4), 0, 0]
 
         MDFillRoundFlatIconButton:
             id: btn_activar
-            icon: "play-outline"
+            icon: "play-circle-outline"
             text: "Activar"
-            font_size: "16sp"
+            font_size: "15sp"
             icon_size: dp(28)
-            md_bg_color: 0.20, 0.66, 0.33, 1
+            md_bg_color: 0.13, 0.70, 0.37, 1
+            text_color: 1, 1, 1, 1
             size_hint_x: 1
-            height: dp(60)
+            height: dp(58)
             on_release: app.iniciar_taximetro()
 
         MDFillRoundFlatIconButton:
             id: btn_parar
-            icon: "pause-outline"
+            icon: "pause-circle-outline"
             text: "Parar"
-            font_size: "16sp"
+            font_size: "15sp"
             icon_size: dp(28)
-            md_bg_color: 0.98, 0.74, 0.02, 1
-            text_color: 0.13, 0.13, 0.14, 1
+            md_bg_color: 0.95, 0.76, 0.05, 1
+            text_color: 0.10, 0.10, 0.10, 1
             size_hint_x: 1
-            height: dp(60)
+            height: dp(58)
             on_release: app.pausar_taximetro()
 
         MDFillRoundFlatIconButton:
             id: btn_finalizar
-            icon: "stop-outline"
+            icon: "stop-circle-outline"
             text: "Finalizar"
-            font_size: "16sp"
+            font_size: "15sp"
             icon_size: dp(28)
-            md_bg_color: 0.92, 0.26, 0.21, 1
+            md_bg_color: 0.88, 0.20, 0.18, 1
+            text_color: 1, 1, 1, 1
             size_hint_x: 1
-            height: dp(60)
+            height: dp(58)
             on_release: app.finalizar_taximetro()
 
-    # ── RESUMEN DE SESIÓN ────────────────────────────────────────────────────
-    MDLabel:
-        id: lbl_resumen
-        text: ""
-        font_style: "Caption"
-        halign: "center"
-        theme_text_color: "Secondary"
-        size_hint_y: None
-        height: dp(30)
+    MDFillRoundFlatIconButton:
+        id: btn_factura
+        icon: "file-pdf-box"
+        text: "Generar Factura PDF"
+        font_size: "14sp"
+        icon_size: dp(24)
+        md_bg_color: 0.20, 0.35, 0.75, 1
+        text_color: 1, 1, 1, 1
+        size_hint_x: 1
+        height: dp(50)
+        on_release: app.generar_factura()
 '''
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# APLICACIÓN PRINCIPAL
+# APLICACION PRINCIPAL
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TaximetroApp(MDApp):
-    """Aplicación principal del Taxímetro Digital."""
 
-    # ── Estado interno del taxímetro ─────────────────────────────────────────
-    _activo          = False      # True cuando está contando
-    _segundos_parado = 0.0
-    _segs_movimiento = 0.0
-    _importe         = 0.0
-    _clock_event     = None       # Referencia al Clock para poder cancelarlo
-    _servicio_actual : TipoServicio = None
-    _trayecto_actual : Trayecto     = None
-
-    # ── Gestores ─────────────────────────────────────────────────────────────
-    _gestor_config   : GestorConfig   = None
-    _gestor_historial: GestorHistorial = None
-    _gestor_auth     : GestorAuth      = None
+    _activo           = False
+    _segundos_parado  = 0.0
+    _segs_movimiento  = 0.0
+    _importe          = 0.0
+    _clock_event      = None
+    _servicio_actual  = None
+    _trayecto_actual  = None
+    _ultimo_trayecto  = None
 
     def build(self):
-        self.theme_cls.theme_style    = "Light"
-        self.theme_cls.primary_palette = "Blue"
-
-        # Instanciar gestores
+        self.theme_cls.theme_style     = "Dark"
+        self.theme_cls.primary_palette = "Amber"
         self._gestor_config    = GestorConfig()
         self._gestor_historial = GestorHistorial()
         self._gestor_auth      = GestorAuth()
-
-        # Servicio por defecto: económico
-        self._servicio_actual = SERVICIOS_MAP["economico"]
-
-        # FIX: Builder.load_string devuelve el widget raíz correctamente
+        self._servicio_actual  = SERVICIOS_MAP["economico"]
         return Builder.load_string(KV)
 
     def on_start(self):
-        """Poblar la lista de servicios al arrancar."""
-        # FIX: self.root es el MDBoxLayout raíz; ids están disponibles aquí
         service_list = self.root.ids.service_list
         for servicio in SERVICIOS:
             item = ServiceListItem(
                 icon_name     = servicio.icon_name,
                 service_name  = servicio.nombre,
-                service_color = COLORES.get(servicio.color_name, [0, 0, 0, 1]),
+                service_color = COLORES.get(servicio.color_name, [1, 1, 1, 1]),
             )
-            # Al pulsar un servicio, lo seleccionamos
             item.bind(on_release=lambda x, s=servicio: self._seleccionar_servicio(s))
             service_list.add_widget(item)
-
         logger.info("App iniciada correctamente.")
 
-    # ── Lógica de selección de servicio ──────────────────────────────────────
-
-    def _seleccionar_servicio(self, servicio: TipoServicio):
+    def _seleccionar_servicio(self, servicio):
         if self._activo:
-            logger.warning("No se puede cambiar el servicio con el taxímetro activo.")
             return
         self._servicio_actual = servicio
         self.root.ids.lbl_servicio.text = f"Servicio: {servicio.nombre}"
-        logger.info(f"Servicio seleccionado: {servicio.nombre}")
-
-    # ── Lógica principal del taxímetro ────────────────────────────────────────
+        logger.info(f"Servicio: {servicio.nombre}")
 
     def iniciar_taximetro(self):
-        """Inicia o reanuda el conteo."""
         if self._activo:
-            return  # Ya está activo
-
+            return
         tarifa = self._gestor_config.tarifa
-
-        # Si es un trayecto nuevo (no hay ninguno activo), crearlo
         if self._trayecto_actual is None:
             ahora = datetime.now()
             self._trayecto_actual = Trayecto(
@@ -517,103 +636,89 @@ class TaximetroApp(MDApp):
                 fecha_inicio = ahora.isoformat(),
                 servicio     = self._servicio_actual.clave,
             )
-            # Aplicar bajada de bandera + cargo fijo del servicio
-            bandera = (
-                tarifa.precio_bajada_bandera
-                + self._servicio_actual.cargo_fijo
-            )
-            self._importe = bandera
-            logger.info(
-                f"Nuevo trayecto iniciado. "
-                f"Servicio: {self._servicio_actual.nombre}. "
-                f"Bajada de bandera: {bandera:.2f}€"
-            )
-
+            self._importe = tarifa.precio_bajada_bandera + self._servicio_actual.cargo_fijo
+            self.root.ids.lbl_inicio.text  = f"Inicio: {ahora.strftime('%H:%M:%S')}"
+            self.root.ids.lbl_fin.text     = "Fin: --:--:--"
+            self.root.ids.lbl_resumen.text = ""
         self._activo = True
-        self._actualizar_ui("En movimiento...", color=[0.20, 0.66, 0.33, 1])
-
-        # FIX: Clock.schedule_interval para llamar a _tick cada 1 segundo
+        self.root.ids.lbl_estado.text = "EN MOVIMIENTO..."
         self._clock_event = Clock.schedule_interval(self._tick, 1.0)
-        logger.info("Taxímetro activado.")
+        logger.info("Taximetro activado.")
 
     def pausar_taximetro(self):
-        """Pausa el conteo (simula estar parado)."""
         if not self._activo:
             return
         self._activo = False
         if self._clock_event:
             self._clock_event.cancel()
             self._clock_event = None
-        self._actualizar_ui("Parado", color=[0.98, 0.74, 0.02, 1])
-        logger.info("Taxímetro pausado.")
+        self.root.ids.lbl_estado.text = "PARADO"
+        logger.info("Taximetro pausado.")
 
     def finalizar_taximetro(self):
-        """Finaliza el trayecto y lo guarda en el historial."""
         if self._trayecto_actual is None:
-            logger.warning("No hay trayecto activo para finalizar.")
             return
-
-        # Detener el clock si estaba activo
         if self._activo:
             self._activo = False
             if self._clock_event:
                 self._clock_event.cancel()
                 self._clock_event = None
-
-        # Completar datos del trayecto
         ahora = datetime.now()
-        self._trayecto_actual.fecha_fin          = ahora.isoformat()
-        self._trayecto_actual.segundos_parado    = self._segundos_parado
+        self._trayecto_actual.fecha_fin           = ahora.isoformat()
+        self._trayecto_actual.segundos_parado     = self._segundos_parado
         self._trayecto_actual.segundos_movimiento = self._segs_movimiento
-        self._trayecto_actual.importe_total      = round(self._importe, 2)
-
-        # Guardar en historial
+        self._trayecto_actual.importe_total       = round(self._importe, 2)
         self._gestor_historial.agregar(self._trayecto_actual)
-
-        # Mostrar resumen
-        resumen = (
-            f"Trayecto finalizado · {self._importe:.2f}€ · "
-            f"{int(self._segs_movimiento)}s mov / {int(self._segundos_parado)}s parado"
+        self._ultimo_trayecto = self._trayecto_actual
+        self.root.ids.lbl_fin.text     = f"Fin: {ahora.strftime('%H:%M:%S')}"
+        self.root.ids.lbl_estado.text  = "FINALIZADO"
+        self.root.ids.lbl_resumen.text = (
+            f"Total: {self._importe:.2f} EUR  |  "
+            f"Mov: {int(self._segs_movimiento)}s  |  "
+            f"Parado: {int(self._segundos_parado)}s"
         )
-        self.root.ids.lbl_resumen.text = resumen
-        self._actualizar_ui("Finalizado", color=[0.92, 0.26, 0.21, 1])
-        logger.info(resumen)
-
-        # Resetear estado
-        self._trayecto_actual  = None
-        self._segundos_parado  = 0.0
-        self._segs_movimiento  = 0.0
-        self._importe          = 0.0
-
-        # Volver precio a cero tras breve pausa visual
-        Clock.schedule_once(self._resetear_ui, 3.0)
-
-    # ── Tick del reloj ────────────────────────────────────────────────────────
+        logger.info(f"Trayecto finalizado. {self._importe:.2f} EUR")
+        self._trayecto_actual = None
+        self._segundos_parado = 0.0
+        self._segs_movimiento = 0.0
+        self._importe         = 0.0
+        Clock.schedule_once(self._resetear_ui, 5.0)
 
     def _tick(self, dt):
-        """Llamado cada segundo por el Clock. Acumula tiempo e importe."""
         tarifa = self._gestor_config.tarifa
         mult   = self._servicio_actual.multiplicador
-
-        # Por ahora siempre cuenta como "en movimiento".
-        # Aquí podrías integrar GPS para detectar velocidad real.
         self._segs_movimiento += 1
         self._importe += tarifa.precio_movimiento * mult
+        self.root.ids.lbl_precio.text = f"{self._importe:.2f} EUR"
+        total = int(self._segs_movimiento + self._segundos_parado)
+        h = total // 3600
+        m = (total % 3600) // 60
+        s = total % 60
+        self.root.ids.lbl_cronometro.text    = f"{h:02d}h {m:02d}m {s:02d}s"
+        self.root.ids.lbl_t_movimiento.text  = f"Mov: {int(self._segs_movimiento)}s"
+        self.root.ids.lbl_t_parado.text      = f"Parado: {int(self._segundos_parado)}s"
 
-        # Actualizar etiqueta de precio en la UI
-        self.root.ids.lbl_precio.text = f"{self._importe:.2f} €"
-
-    # ── Helpers de UI ─────────────────────────────────────────────────────────
-
-    def _actualizar_ui(self, estado: str, color: list = None):
-        """Actualiza la etiqueta de estado."""
-        self.root.ids.lbl_estado.text = estado
+    def generar_factura(self):
+        if self._ultimo_trayecto is None:
+            self.root.ids.lbl_resumen.text = "Finaliza un trayecto primero."
+            return
+        servicio = SERVICIOS_MAP.get(self._ultimo_trayecto.servicio, SERVICIOS_MAP["economico"])
+        tarifa   = self._gestor_config.tarifa
+        try:
+            ruta = generar_factura_pdf(self._ultimo_trayecto, servicio, tarifa)
+            self.root.ids.lbl_resumen.text = f"Factura guardada:\n{os.path.basename(ruta)}"
+        except Exception as e:
+            self.root.ids.lbl_resumen.text = f"Error PDF: {e}"
+            logger.error(f"Error PDF: {e}")
 
     def _resetear_ui(self, *args):
-        """Resetea el precio y el estado en pantalla."""
-        self.root.ids.lbl_precio.text   = "0.00 €"
-        self.root.ids.lbl_estado.text   = "Esperando..."
-        self.root.ids.lbl_resumen.text  = ""
+        self.root.ids.lbl_precio.text       = "0.00 EUR"
+        self.root.ids.lbl_estado.text       = "ESPERANDO..."
+        self.root.ids.lbl_cronometro.text   = "00h 00m 00s"
+        self.root.ids.lbl_t_movimiento.text = "Mov: 0s"
+        self.root.ids.lbl_t_parado.text     = "Parado: 0s"
+        self.root.ids.lbl_inicio.text       = "Inicio: --:--:--"
+        self.root.ids.lbl_fin.text          = "Fin: --:--:--"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
