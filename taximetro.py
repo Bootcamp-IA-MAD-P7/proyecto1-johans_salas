@@ -9,18 +9,29 @@
 #LIBRERÍAS
 # ══════════════════════════════════════════════════════════════════════════════
 
-from dataclasses import dataclass, asdict
-from datetime import datetime
-import tkinter as tk
-from tkinter import ttk, messagebox, simpledialog
-import threading
-import time
-import logging
-import json
-import hashlib
 import os
-from typing import Optional
-import queue
+import json
+import logging
+import hashlib
+from dataclasses import dataclass, field, asdict
+from datetime import datetime
+
+# Configuración de KivyMD y Kivy
+from kivy.config import Config
+# Configurar la ventana antes de que se cargue la App
+Config.set('graphics', 'width', '450')
+Config.set('graphics', 'height', '750')
+Config.set('graphics', 'resizable', False)
+
+from kivymd.app import MDApp
+from kivy.lang import Builder
+from kivy.uix.boxlayout import BoxLayout
+from kivymd.uix.button import MDFillRoundFlatIconButton
+from kivymd.uix.label import MDLabel
+from kivymd.uix.list import OneLineAvatarListItem, ILeftBodyTouch
+from kivymd.uix.selectioncontrol import MDCheckbox
+from kivy.properties import StringProperty, NumericProperty, ListProperty
+from kivy.metrics import dp
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -49,7 +60,7 @@ USERS_FILE   = os.path.join(BASE_DIR, "usuarios.json")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# MODELADO DE DATOS
+# MODELOS DE DATOS
 # ══════════════════════════════════════════════════════════════════════════════
 
 @dataclass
@@ -71,20 +82,20 @@ class TipoServicio:
     """Define un tipo de servicio con su lógica de precio."""
     clave: str          # identificador interno
     nombre: str         # texto visible
-    emoji: str
+    icon_name: str
     descripcion: str
     cargo_fijo: float   # € extra al iniciar (bajada de bandera adicional)
     multiplicador: float  # factor sobre tarifas por segundo (1.0 = sin cambio)
-    color: str          # color del badge en la GUI
+    color_name: str          # color del badge en la GUI
 
     def cargo_extra_display(self) -> str:
         partes = []
         if self.cargo_fijo > 0:
             partes.append(f"+{self.cargo_fijo:.2f}€ fijo")
-        if self.multiplicador > 1.0:
+        if self.multiplicador != 1.0:
             partes.append(f"x{self.multiplicador} tarifa")
-        elif self.multiplicador < 1.0:
-            partes.append(f"x{self.multiplicador} tarifa (descuento)")
+        if self.multiplicador < 1.0:
+            partes.append(f"x{self.multiplicador} tarifa")
         return " · ".join(partes) if partes else "Sin cargo extra"
     
 # Catálogo de servicios disponibles
@@ -92,49 +103,58 @@ SERVICIOS: list[TipoServicio] = [
     TipoServicio(
         clave="economico",
         nombre="Económico",
-        emoji="🚗",
+        icon_name="car-flatbed-type",
         descripcion="Tarifa estándar sin recargos",
         cargo_fijo=0.0,
         multiplicador=1.0,
-        color="#888888",
+        color_name="Gray",
     ),
     TipoServicio(
         clave="xl",
         nombre="XL / Familiar",
-        emoji="👨‍👩‍👧",
+        icon_name="account-group",
         descripcion="Vehículo de mayor capacidad",
         cargo_fijo=2.00,
         multiplicador=1.4,
-        color="#1e90ff",
+        color_name="Blue",
     ),
     TipoServicio(
         clave="compartido",
         nombre="Compartido",
-        emoji="👥",
+        icon_name="account-multiple",
         descripcion="Viaje compartido, precio reducido",
         cargo_fijo=0.0,
         multiplicador=0.6,
-        color="#00c896",
+        color_name="Teal",
     ),
     TipoServicio(
         clave="pet",
         nombre="Pet Friendly",
-        emoji="🐾",
+        icon_name="paw",
         descripcion="Mascotas permitidas",
         cargo_fijo=1.50,
         multiplicador=1.0,
-        color="#ff9f43",
+        color_name="Orange",
     ),
     TipoServicio(
         clave="flash",
         nombre="Flash",
-        emoji="⚡",
+        icon_name="lightning-bolt",
         descripcion="Recogida prioritaria más rápida",
         cargo_fijo=3.00,
         multiplicador=1.2,
-        color="#f5c518",
+        color_name="Amber",
     ),
 ]
+
+# Colores RGBA para KivyMD
+COLORES = {
+    "Gray": [0.5, 0.5, 0.5, 1],
+    "Blue": [0.1, 0.4, 0.9, 1],
+    "Teal": [0, 0.5, 0.5, 1],
+    "Orange": [1, 0.5, 0, 1],
+    "Amber": [1, 0.75, 0, 1],
+}
 
 # Mapa para acceso rápido por clave
 SERVICIOS_MAP: dict[str, TipoServicio] = {s.clave: s for s in SERVICIOS}
@@ -179,7 +199,7 @@ class GestorConfig:
                 logger.info("Configuración cargada desde archivo.")
                 return Tarifa.from_dict(data)
             except Exception as e:
-                logger.warning("Error cargando config: %s. Usando valores por defecto.", e)
+                logger.warning(f"Error cargando config: {e}. Usando valores por defecto.")
         return Tarifa()
 
     def guardar(self):
@@ -196,8 +216,7 @@ class GestorConfig:
         self._tarifa.precio_movimiento = movimiento
         self._tarifa.precio_bajada_bandera = bandera
         self.guardar()
-        logger.info("Tarifas actualizadas: parado=%s, movimiento=%s, bandera=%s",
-                    parado, movimiento, bandera)
+        logger.info(f"Tarifas actualizadas: parado={parado}, movimiento={movimiento}, bandera={bandera}")
 
 
 class GestorHistorial:
@@ -213,7 +232,7 @@ class GestorHistorial:
                     data = json.load(f)
                 return [Trayecto.from_dict(t) for t in data]
             except Exception as e:
-                logger.warning("Error cargando historial: %s", e)
+                logger.warning(f"Error cargando historial: {e}")
         return []
 
     def guardar(self):
@@ -223,8 +242,7 @@ class GestorHistorial:
     def agregar(self, trayecto: Trayecto):
         self._trayectos.append(trayecto)
         self.guardar()
-        logger.info("Trayecto %s guardado en historial. Total: %.2f€",
-                    trayecto.id, trayecto.importe_total)
+        logger.info(f"Trayecto {trayecto.id} guardado en historial. Total: {trayecto.importe_total:.2f}€")
 
     @property
     def trayectos(self) -> list:
@@ -248,7 +266,7 @@ class GestorAuth:
                 with open(USERS_FILE, "r", encoding="utf-8") as f:
                     return json.load(f)
             except Exception as e:
-                logger.warning("Error cargando usuarios: %s", e)
+                logger.warning(f"Error cargando usuarios: {e}")
         return {}
 
     def _guardar(self):
@@ -271,596 +289,204 @@ class GestorAuth:
         if usuario in self._usuarios:
             ok = self._usuarios[usuario]["hash"] == self._hash(password)
             if ok:
-                logger.info("Acceso concedido a '%s'.", usuario)
+                logger.info(f"Acceso concedido a '{usuario}'.")
             else:
-                logger.warning("Contraseña incorrecta para '%s'.", usuario)
+                logger.warning(f"Contraseña incorrecta para '{usuario}'.")
             return ok
-        logger.warning("Usuario '%s' no encontrado.", usuario)
+        logger.warning(f"Usuario '{usuario}' no encontrado.")
         return False
 
     def cambiar_password(self, usuario: str, nueva: str):
         if usuario in self._usuarios:
             self._usuarios[usuario]["hash"] = self._hash(nueva)
             self._guardar()
-            logger.info("Contraseña cambiada para '%s'.", usuario)
+            logger.info(f"Contraseña cambiada para '{usuario}'.")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# MOTOR DEL TAXÍMETRO
+# INTERFAZ DE USUARIO (KivyMD)
 # ══════════════════════════════════════════════════════════════════════════════
 
-class MotorTaximetro:
-    """Núcleo de cálculo del taxímetro (independiente de la GUI)."""
+# Diseño de la interfaz en lenguaje KV (declarativo, integrado)
+KV = '''
+#:import dp kivy.metrics.dp
 
-    def __init__(self, tarifa: Tarifa, servicio: "TipoServicio" = None):
-        self.tarifa = tarifa
-        self.servicio = servicio or SERVICIOS_MAP["economico"]
-        self._activo = False
-        self._en_movimiento = False
-        self._segundos_parado = 0.0
-        self._segundos_movimiento = 0.0
-        self._importe = 0.0
-        self._inicio: Optional[datetime] = None
-        self._hilo: Optional[threading.Thread] = None
-        self._lock = threading.Lock()
-        self.cola_tick: queue.Queue = queue.Queue()
-
-    @property
-    def activo(self) -> bool:
-        return self._activo
-
-    @property
-    def en_movimiento(self) -> bool:
-        return self._en_movimiento
-
-    @property
-    def importe(self) -> float:
-        return self._importe
-
-    @property
-    def segundos_parado(self) -> float:
-        return self._segundos_parado
-
-    @property
-    def segundos_movimiento(self) -> float:
-        return self._segundos_movimiento
-
-    def iniciar(self):
-        if self._activo:
-            return
-        self._activo = True
-        self._en_movimiento = False
-        self._segundos_parado = 0.0
-        self._segundos_movimiento = 0.0
-        # Bajada de bandera base + cargo fijo del servicio
-        self._importe = self.tarifa.precio_bajada_bandera + self.servicio.cargo_fijo
-        self._inicio = datetime.now()
-        self._hilo = threading.Thread(target=self._bucle, daemon=True)
-        self._hilo.start()
-        logger.info("Trayecto iniciado. Servicio: %s (cargo_fijo=%.2f€, multiplicador=x%s)",
-            self.servicio.nombre, self.servicio.cargo_fijo, self.servicio.multiplicador)
-
-    def _bucle(self):
-        INTERVALO = 0.1  # segundos
-        mul = self.servicio.multiplicador
-        while self._activo:
-            time.sleep(INTERVALO)
-            with self._lock:
-                if self._en_movimiento:
-                    self._segundos_movimiento += INTERVALO
-                    self._importe += self.tarifa.precio_movimiento * mul * INTERVALO
-                else:
-                    self._segundos_parado += INTERVALO
-                    self._importe += self.tarifa.precio_parado * mul * INTERVALO
-            self.cola_tick.put_nowait(True)
-
-    def toggle_movimiento(self):
-        with self._lock:
-            self._en_movimiento = not self._en_movimiento
-        estado = "movimiento" if self._en_movimiento else "parado"
-        logger.info("Estado cambiado a: %s", estado)
-
-    def finalizar(self, conductor: str = "") -> Trayecto:
-        self._activo = False
-        fin = datetime.now()
-        trayecto = Trayecto(
-            id=self._inicio.strftime("%Y%m%d%H%M%S%f"),
-            fecha_inicio=self._inicio.strftime("%d/%m/%Y %H:%M:%S"),
-            fecha_fin=fin.strftime("%d/%m/%Y %H:%M:%S"),
-            segundos_parado=round(self._segundos_parado, 1),
-            segundos_movimiento=round(self._segundos_movimiento, 1),
-            importe_total=round(self._importe, 2),
-            servicio=self.servicio.clave,
-            conductor = conductor,
-        )
-        logger.info("Trayecto finalizado. Servicio: %s. Importe: %.2f€",
-                    self.servicio.nombre, trayecto.importe_total)
-        return trayecto
+<ServiceListItem>:
+    text: root.service_name
+    font_style: "H6"  # Letras más grandes para el nombre del servicio
+    theme_text_color: "Custom"
+    text_color: self.theme_cls.primary_color
     
-
-# ══════════════════════════════════════════════════════════════════════════════
-# INTERFAZ GRÁFICA
-# ══════════════════════════════════════════════════════════════════════════════
-
-COLORES = {
-    "bg":        "#0d0d0d",
-    "panel":     "#1a1a1a",
-    "borde":     "#2a2a2a",
-    "amarillo":  "#f5c518",
-    "verde":     "#00c896",
-    "rojo":      "#ff4757",
-    "azul":      "#1e90ff",
-    "texto":     "#f0f0f0",
-    "subtexto":  "#888888",
-    "blanco":    "#ffffff",
-}
-
-FUENTE_DISPLAY = ("Courier New", 48, "bold")
-FUENTE_TITULO  = ("Courier New", 14, "bold")
-FUENTE_NORMAL  = ("Courier New", 11)
-FUENTE_PEQUENA = ("Courier New", 9)
-
-class VentanaLogin(tk.Toplevel):
-    """Ventana modal de autenticación."""
-
-    def __init__(self, parent, gestor_auth: GestorAuth, callback):
-        super().__init__(parent)
-        self.gestor_auth = gestor_auth
-        self.callback = callback
-        self.resultado = False
-
-        self.title("🚕 Taxímetro — Acceso")
-        self.configure(bg=COLORES["bg"])
-        self.resizable(False, False)
-        self.grab_set()
-
-        self._construir()
-        self.after(100, self._centrar)
-
-    def _centrar(self):
-        self.update_idletasks()
-        w, h = self.winfo_width(), self.winfo_height()
-        sw = self.winfo_screenwidth()
-        sh = self.winfo_screenheight()
-        self.geometry(f"{w}x{h}+{(sw-w)//2}+{(sh-h)//2}")
-
-    def _construir(self):
-        frame = tk.Frame(self, bg=COLORES["bg"], padx=40, pady=30)
-        frame.pack()
-
-        tk.Label(frame, text="🚕", font=("Courier New", 40),
-                 bg=COLORES["bg"], fg=COLORES["amarillo"]).pack(pady=(0, 5))
-        tk.Label(frame, text="TAXÍMETRO DIGITAL", font=("Courier New", 16, "bold"),
-                 bg=COLORES["bg"], fg=COLORES["amarillo"]).pack()
-        tk.Label(frame, text="Identificación requerida", font=FUENTE_PEQUENA,
-                 bg=COLORES["bg"], fg=COLORES["subtexto"]).pack(pady=(0, 20))
-
-        # Usuario
-        tk.Label(frame, text="USUARIO", font=FUENTE_PEQUENA,
-                 bg=COLORES["bg"], fg=COLORES["subtexto"]).pack(anchor="w")
-        self.entry_user = tk.Entry(frame, font=FUENTE_NORMAL, bg=COLORES["panel"],
-                                   fg=COLORES["texto"], insertbackground=COLORES["amarillo"],
-                                   relief="flat", width=24, bd=0)
-        self.entry_user.pack(pady=(2, 10), ipady=6, ipadx=8)
-        self.entry_user.insert(0, "admin")
-
-        # Contraseña
-        tk.Label(frame, text="CONTRASEÑA", font=FUENTE_PEQUENA,
-                 bg=COLORES["bg"], fg=COLORES["subtexto"]).pack(anchor="w")
-        self.entry_pass = tk.Entry(frame, font=FUENTE_NORMAL, bg=COLORES["panel"],
-                                   fg=COLORES["texto"], insertbackground=COLORES["amarillo"],
-                                   relief="flat", width=24, bd=0, show="●")
-        self.entry_pass.pack(pady=(2, 5), ipady=6, ipadx=8)
-        self.entry_pass.bind("<Return>", lambda e: self._login())
-
-        self.lbl_error = tk.Label(frame, text="", font=FUENTE_PEQUENA,
-                                   bg=COLORES["bg"], fg=COLORES["rojo"])
-        self.lbl_error.pack(pady=(0, 10))
-
-        tk.Label(frame, text="Contacta al administrador si olvidaste tu clave",
-                 font=FUENTE_PEQUENA, bg=COLORES["bg"], fg=COLORES["subtexto"]).pack(pady=(0,10))
-
-        btn = tk.Button(frame, text="ENTRAR", font=FUENTE_TITULO,
-                        bg=COLORES["amarillo"], fg=COLORES["bg"],
-                        relief="flat", cursor="hand2", width=20,
-                        command=self._login)
-        btn.pack(ipady=8)
-
-    def _login(self):
-        usuario = self.entry_user.get().strip()
-        password = self.entry_pass.get()
-        if self.gestor_auth.autenticar(usuario, password):
-            self.resultado = True
-            self.destroy()
-            self.callback(usuario)
-        else:
-            self.lbl_error.config(text="⚠ Credenciales incorrectas")
-            self.entry_pass.delete(0, tk.END)
-
-
-class AppTaximetro(tk.Tk):
-    """Ventana principal de la aplicación."""
-
-    def __init__(self):
-        super().__init__()
-        self.withdraw()  # Ocultar hasta login
-
-        # Gestores
-        self.gestor_config   = GestorConfig()
-        self.gestor_historial = GestorHistorial()
-        self.gestor_auth     = GestorAuth()
-
-        # Motor (se recrea en cada trayecto)
-        self.motor = MotorTaximetro(self.gestor_config.tarifa)
-
-        self.conductor_actual = ""
-        self.servicio_actual: TipoServicio = SERVICIOS_MAP["economico"]
-
-        # Mostrar login
-        login = VentanaLogin(self, self.gestor_auth, self._post_login)
-        self.wait_window(login)
-        if not login.resultado:
-            self.destroy()
-            return
-
-    def _post_login(self, usuario: str):
-        self.conductor_actual = usuario
-        self.deiconify()
-        self._construir_ui()
-        logger.info("Sesión iniciada por '%s'.", usuario)
-
-    def _construir_ui(self):
-        self.title("🚕 Taxímetro Digital")
-        self.configure(bg=COLORES["bg"])
-        self.resizable(False, False)
-        self._centrar(540, 820)
-
-        # ── Header ──────────────────────────────────────────────────────────
-        header = tk.Frame(self, bg=COLORES["amarillo"])
-        header.pack(fill="x")
-        tk.Label(header, text="🚕 TAXÍMETRO DIGITAL",
-                 font=("Courier New", 15, "bold"),
-                 bg=COLORES["amarillo"], fg=COLORES["bg"]).pack(side="left", padx=16, pady=10)
-        tk.Label(header, text=f"👤 {self.conductor_actual}",
-                 font=FUENTE_PEQUENA, bg=COLORES["amarillo"],
-                 fg=COLORES["bg"]).pack(side="right", padx=16)
-
-        # ── Display principal ────────────────────────────────────────────────
-        panel_display = tk.Frame(self, bg=COLORES["panel"], pady=20)
-        panel_display.pack(fill="x", padx=16, pady=(16, 0))
-
-        self.lbl_estado = tk.Label(panel_display, text="● ESPERANDO",
-                                   font=FUENTE_TITULO, bg=COLORES["panel"],
-                                   fg=COLORES["subtexto"])
-        self.lbl_estado.pack()
-
-        self.lbl_importe = tk.Label(panel_display, text="0,00 €",
-                                    font=FUENTE_DISPLAY, bg=COLORES["panel"],
-                                    fg=COLORES["amarillo"])
-        self.lbl_importe.pack(pady=8)
-
-        # Estadísticas
-        stats_frame = tk.Frame(panel_display, bg=COLORES["panel"])
-        stats_frame.pack()
-
-        self.lbl_parado = self._stat_label(stats_frame, "PARADO", "0s", COLORES["rojo"])
-        self.lbl_parado.pack(side="left", padx=20)
-        self.lbl_movimiento = self._stat_label(stats_frame, "MOVIMIENTO", "0s", COLORES["verde"])
-        self.lbl_movimiento.pack(side="left", padx=20)
-
-        # ── Selector de tipo de servicio ─────────────────────────────────────
-        srv_outer = tk.Frame(self, bg=COLORES["bg"])
-        srv_outer.pack(fill="x", padx=16, pady=(12, 0))
-        tk.Label(srv_outer, text="TIPO DE SERVICIO",
-                 font=FUENTE_PEQUENA, bg=COLORES["bg"],
-                 fg=COLORES["subtexto"]).pack(anchor="w", pady=(0, 6))
-
-        srv_grid = tk.Frame(srv_outer, bg=COLORES["bg"])
-        srv_grid.pack(fill="x")
-
-        self._btns_servicio: dict[str, tk.Button] = {}
-        for i, srv in enumerate(SERVICIOS):
-            btn = tk.Button(
-                srv_grid,
-                text=f"{srv.emoji}\n{srv.nombre}",
-                font=("Courier New", 8, "bold"),
-                bg=COLORES["panel"],
-                fg=COLORES["subtexto"],
-                activebackground=srv.color,
-                relief="flat", cursor="hand2",
-                width=8, height=3,
-                command=lambda s=srv: self._seleccionar_servicio(s),
-            )
-            btn.grid(row=0, column=i, padx=3, pady=0, sticky="ew")
-            srv_grid.columnconfigure(i, weight=1)
-            self._btns_servicio[srv.clave] = btn
-
-        # Badge de info del servicio seleccionado
-        self.lbl_srv_info = tk.Label(
-            srv_outer, text="🚗  Económico  ·  Sin cargo extra",
-            font=FUENTE_PEQUENA, bg=COLORES["bg"], fg=COLORES["subtexto"])
-        self.lbl_srv_info.pack(anchor="w", pady=(6, 0))
-
-        # Marcar económico como seleccionado por defecto
-        self._seleccionar_servicio(SERVICIOS_MAP["economico"])
-
-        # ── Separador ────────────────────────────────────────────────────────
-        tk.Frame(self, bg=COLORES["borde"], height=1).pack(fill="x", padx=16, pady=(12, 0))
-
-        # ── Botones principales ──────────────────────────────────────────────
-        btn_frame = tk.Frame(self, bg=COLORES["bg"])
-        btn_frame.pack(padx=16, pady=16, fill="x")
-
-        self.btn_iniciar = self._boton(btn_frame, "▶  INICIAR", COLORES["verde"],
-                                        COLORES["bg"], self._iniciar, ancho=22)
-        self.btn_iniciar.pack(side="left", padx=(0, 8), ipady=12, fill="x", expand=True)
-
-        self.btn_toggle = self._boton(btn_frame, "⏸  PARADO", COLORES["azul"],
-                                       COLORES["blanco"], self._toggle, ancho=22)
-        self.btn_toggle.pack(side="left", padx=(0, 8), ipady=12, fill="x", expand=True)
-        self.btn_toggle.config(state="disabled")
-
-        self.btn_fin = self._boton(btn_frame, "⏹  FINALIZAR", COLORES["rojo"],
-                                    COLORES["blanco"], self._finalizar, ancho=22)
-        self.btn_fin.pack(side="left", ipady=12, fill="x", expand=True)
-        self.btn_fin.config(state="disabled")
-
-        # ── Separador ────────────────────────────────────────────────────────
-        tk.Frame(self, bg=COLORES["borde"], height=1).pack(fill="x", padx=16)
-
-        # ── Historial ────────────────────────────────────────────────────────
-        hist_header = tk.Frame(self, bg=COLORES["bg"])
-        hist_header.pack(fill="x", padx=16, pady=(12, 4))
-        tk.Label(hist_header, text="HISTORIAL DE TRAYECTOS",
-                 font=FUENTE_TITULO, bg=COLORES["bg"],
-                 fg=COLORES["subtexto"]).pack(side="left")
-
-        self._boton(hist_header, "⚙ Tarifas", COLORES["panel"], COLORES["texto"],
-                    self._abrir_config, ancho=10).pack(side="right", ipady=4, ipadx=4)
-        self._boton(hist_header, "🔑 Cambiar clave", COLORES["panel"], COLORES["texto"],
-                    self._cambiar_password, ancho=14).pack(side="right", padx=6, ipady=4, ipadx=4)
-
-        # Tabla
-        cols = ("Servicio", "Fecha", "Duración", "Importe")
-        self.tabla = ttk.Treeview(self, columns=cols, show="headings", height=7)
-        style = ttk.Style()
-        style.theme_use("clam")
-        style.configure("Treeview", background=COLORES["panel"],
-                        foreground=COLORES["texto"], fieldbackground=COLORES["panel"],
-                        rowheight=26, font=FUENTE_PEQUENA)
-        style.configure("Treeview.Heading", background=COLORES["borde"],
-                        foreground=COLORES["amarillo"], font=FUENTE_PEQUENA)
-
-        for col in cols:
-            self.tabla.heading(col, text=col)
-        self.tabla.column("Servicio", width=100)
-        self.tabla.column("Fecha",    width=155)
-        self.tabla.column("Duración", width=75)
-        self.tabla.column("Importe",  width=80)
-
-        self.tabla.pack(padx=16, pady=(0, 8), fill="x")
-
-        # Totales
-        total_frame = tk.Frame(self, bg=COLORES["bg"])
-        total_frame.pack(fill="x", padx=16, pady=(0, 16))
-        self.lbl_total = tk.Label(total_frame,
-                                   text=f"Total recaudado: {self.gestor_historial.total_recaudado():.2f} €",
-                                   font=FUENTE_NORMAL, bg=COLORES["bg"],
-                                   fg=COLORES["amarillo"])
-        self.lbl_total.pack(side="right")
-
-        self._refrescar_historial()
-
-    # ── Helpers visuales ──────────────────────────────────────────────────────
-
-    def _centrar(self, w, h):
-        sw = self.winfo_screenwidth()
-        sh = self.winfo_screenheight()
-        self.geometry(f"{w}x{h}+{(sw-w)//2}+{(sh-h)//2}")
-
-    def _boton(self, parent, texto, bg, fg, cmd, ancho=12):
-        return tk.Button(parent, text=texto, font=FUENTE_NORMAL,
-                         bg=bg, fg=fg, activebackground=bg,
-                         relief="flat", cursor="hand2", width=ancho, command=cmd)
-
-    def _stat_label(self, parent, titulo, valor, color):
-        frame = tk.Frame(parent, bg=COLORES["panel"])
-        tk.Label(frame, text=titulo, font=FUENTE_PEQUENA,
-                 bg=COLORES["panel"], fg=COLORES["subtexto"]).pack()
-        lbl = tk.Label(frame, text=valor, font=("Courier New", 13, "bold"),
-                       bg=COLORES["panel"], fg=color)
-        lbl.pack()
-        frame.valor_label = lbl
-        return frame
-
-    # ── Acciones ──────────────────────────────────────────────────────────────
-
-    def _seleccionar_servicio(self, srv: TipoServicio):
-        """Selecciona un tipo de servicio y actualiza la UI."""
-        if self.motor.activo:
-            return  # No se puede cambiar con trayecto en curso
-        self.servicio_actual = srv
-        # Resetear todos los botones
-        for clave, btn in self._btns_servicio.items():
-            s = SERVICIOS_MAP[clave]
-            btn.config(bg=COLORES["panel"], fg=COLORES["subtexto"])
-        # Resaltar el seleccionado
-        self._btns_servicio[srv.clave].config(bg=srv.color, fg=COLORES["bg"])
-        # Actualizar badge de info
-        extras = []
-        if srv.cargo_fijo > 0:
-            extras.append(f"+{srv.cargo_fijo:.2f}€ al inicio")
-        if srv.multiplicador > 1.0:
-            extras.append(f"tarifa x{srv.multiplicador}")
-        elif srv.multiplicador < 1.0:
-            extras.append(f"tarifa x{srv.multiplicador} (descuento)")
-        info = f"{srv.emoji}  {srv.nombre}  ·  {srv.descripcion}"
-        if extras:
-            info += f"  ·  {', '.join(extras)}"
-        self.lbl_srv_info.config(text=info, fg=srv.color if srv.clave != "economico" else COLORES["subtexto"])
-        logger.info("Servicio seleccionado: %s", srv.nombre)
-
-    def _iniciar(self):
-        self.motor = MotorTaximetro(self.gestor_config.tarifa, self.servicio_actual)
-        self.motor.iniciar()
-        self._refrescar_labels()
-        self._poll_motor()
-
-        self.btn_iniciar.config(state="disabled")
-        self.btn_toggle.config(state="normal")
-        self.btn_fin.config(state="normal")
-        for btn in self._btns_servicio.values(): # Bloquear cambio de servicio durante el trayecto
-            btn.config(state="disabled")
-        self._actualizar_estado()
-
-    def _toggle(self):
-        self.motor.toggle_movimiento()
-        self._actualizar_estado()
-
-    def _finalizar(self):
-        trayecto = self.motor.finalizar(conductor=self.conductor_actual)
-        self.gestor_historial.agregar(trayecto)
-
-        #Resetear el display al volver al estado inicial
-        self.lbl_importe.config(text="0,00 €")
-        self.lbl_parado.valor_label.config(text="0s")
-        self.lbl_movimiento.valor_label.config(text="0s")
-
-        self.btn_iniciar.config(state="normal")
-        self.btn_toggle.config(state="disabled")
-        self.btn_fin.config(state="disabled")
-        # Desbloquear selector de servicio
-        for btn in self._btns_servicio.values():
-            btn.config(state="normal")
-        # Restaurar estilo del seleccionado
-        self._seleccionar_servicio(self.servicio_actual)
-
-        self.lbl_estado.config(text="● ESPERANDO", fg=COLORES["subtexto"])
-        self._refrescar_historial()
-
-        srv = SERVICIOS_MAP.get(trayecto.servicio, SERVICIOS_MAP["economico"])
-        extras_txt = ""
-        if srv.cargo_fijo > 0:
-            extras_txt += f"\n   Cargo fijo {srv.nombre}: +{srv.cargo_fijo:.2f} €"
-        if srv.multiplicador != 1.0:
-            extras_txt += f"\n   Multiplicador aplicado: x{srv.multiplicador}"
-
-        messagebox.showinfo("Trayecto finalizado",
-                            f"✅ Trayecto completado\n\n"
-                            f"{srv.emoji}  Servicio: {srv.nombre}\n"
-                            f"🕐 Inicio:      {trayecto.fecha_inicio}\n"
-                            f"🕐 Fin:         {trayecto.fecha_fin}\n"
-                            f"⏸  Parado:     {trayecto.segundos_parado:.0f}s\n"
-                            f"▶  Movimiento: {trayecto.segundos_movimiento:.0f}s"
-                            f"{extras_txt}\n\n"
-                            f"💶 TOTAL:  {trayecto.importe_total:.2f} €")
-
-    def _poll_motor(self):
-        """Polling seguro desde el hilo principal de tkinter."""
-        hay_tick = False
-        try:
-            while True:
-                self.motor.cola_tick.get_nowait()
-                hay_tick = True         #Solo registrar que hubo actividad
-        except queue.Empty:
-            pass
-        if hay_tick:
-            self._refrescar_labels()    #Una sola actualización por ciclo de 100ms
-        if self.motor.activo:
-            self.after(100, self._poll_motor)
-
-    def _refrescar_labels(self):
-        """Lee el estado del motor con lock y actualiza los widgets."""
-        with self.motor._lock:
-            activo = self.motor._activo
-            importe = self.motor._importe
-            seg_parado = self.motor._segundos_parado
-            seg_mov = self.motor._segundos_movimiento
-        if not activo:
-            return
+    IconLeftWidget:
+        icon: root.icon_name
+        # REQUISITO: Iconos estándar de 24x24 px
+        size_hint: None, None
+        size: dp(24), dp(24)
+        theme_text_color: "Custom"
+        text_color: root.service_color if root.service_color else [0,0,0,1]
+
+BoxLayout:
+    orientation: 'vertical'
+    padding: dp(20)
+    spacing: dp(15)
+
+    # --- ENCABEZADO ---
+    MDBoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: dp(60)
+        spacing: dp(10)
+        padding: [0, dp(10), 0, dp(20)]
+
+        MDIcon:
+            icon: "taxi"
+            # REQUISITO: Icono estándar de 24x24 px
+            size_hint: None, None
+            size: dp(24), dp(24)
+            pos_hint: {"center_y": .5}
+            theme_text_color: "Primary"
+
+        MDLabel:
+            text: "Taxímetro Digital"
+            # REQUISITO: Letras generales más grandes
+            font_style: "H4" 
+            pos_hint: {"center_y": .5}
+            theme_text_color: "Primary"
+
+    MDSeparator:
+
+    # --- SELECTOR DE SERVICIOS ---
+    MDLabel:
+        text: "Tipo de Servicio"
+        font_style: "H6"
+        theme_text_color: "Primary"
+        size_hint_y: None
+        height: dp(30)
+
+    # Lista de servicios con iconos de 24x24
+    ScrollView:
+        MDList:
+            id: service_list
+
+    MDSeparator:
+
+    # --- ESTADO Y TARIFAS ---
+    MDCard:
+        orientation: 'vertical'
+        padding: dp(15)
+        size_hint_y: None
+        height: dp(120)
+        radius: [dp(15), dp(15), dp(15), dp(15)] # Diseño Rounded
+        elevation: 2
         
-        self.lbl_importe.config(text=f"{importe:.2f} €".replace(".", ","))
-        self.lbl_parado.valor_label.config(text=f"{seg_parado:.0f}s")
-        self.lbl_movimiento.valor_label.config(text=f"{seg_mov:.0f}s")
+        MDBoxLayout:
+            orientation: 'horizontal'
+            spacing: dp(10)
+            
+            MDIcon:
+                icon: "navigation"
+                # REQUISITO: Icono estándar de 24x24 px
+                size_hint: None, None
+                size: dp(24), dp(24)
+                theme_text_color: "Secondary"
 
-    def _actualizar_estado(self):
-        if self.motor.en_movimiento:
-            self.lbl_estado.config(text="▶ EN MOVIMIENTO", fg=COLORES["verde"])
-            self.btn_toggle.config(text="⏸  PARAR", bg=COLORES["rojo"])
-        else:
-            self.lbl_estado.config(text="⏸ PARADO", fg=COLORES["rojo"])
-            self.btn_toggle.config(text="▶  MOVER", bg=COLORES["verde"])
+            MDLabel:
+                text: "Estado: Esperando..."
+                font_style: "Button" # Más grande
+                theme_text_color: "Secondary"
 
-    def _refrescar_historial(self):
-        for row in self.tabla.get_children():
-            self.tabla.delete(row)
-        for t in reversed(self.gestor_historial.trayectos[-20:]):
-            duracion = t.segundos_parado + t.segundos_movimiento
-            srv = SERVICIOS_MAP.get(t.servicio, SERVICIOS_MAP["economico"])
-            self.tabla.insert("", "end", values=(
-                f"{srv.emoji} {srv.nombre}",
-                t.fecha_inicio,
-                f"{duracion:.0f}s",
-                f"{t.importe_total:.2f} €"
-            ))
-        self.lbl_total.config(
-            text=f"Total recaudado: {self.gestor_historial.total_recaudado():.2f} €")
-
-    # ── Configuración de tarifas ──────────────────────────────────────────────
-
-    def _abrir_config(self):
-        win = tk.Toplevel(self)
-        win.title("⚙ Configuración de Tarifas")
-        win.configure(bg=COLORES["bg"])
-        win.resizable(False, False)
-        win.grab_set()
-
-        tarifa = self.gestor_config.tarifa
-        campos = [
-            ("Precio parado (€/s)",     tarifa.precio_parado),
-            ("Precio movimiento (€/s)", tarifa.precio_movimiento),
-            ("Bajada de bandera (€)",   tarifa.precio_bajada_bandera),
-        ]
-        entries = []
-        for label, valor in campos:
-            fr = tk.Frame(win, bg=COLORES["bg"], padx=20, pady=6)
-            fr.pack(fill="x")
-            tk.Label(fr, text=label, font=FUENTE_NORMAL,
-                     bg=COLORES["bg"], fg=COLORES["texto"], width=26, anchor="w").pack(side="left")
-            e = tk.Entry(fr, font=FUENTE_NORMAL, bg=COLORES["panel"],
-                         fg=COLORES["texto"], width=10, relief="flat",
-                         insertbackground=COLORES["amarillo"])
-            e.insert(0, str(valor))
-            e.pack(side="left", ipady=4, ipadx=4)
-            entries.append(e)
-
-        def guardar():
-            try:
-                p = float(entries[0].get())
-                m = float(entries[1].get())
-                b = float(entries[2].get())
-                self.gestor_config.actualizar(p, m, b)
-                messagebox.showinfo("✅ Guardado", "Tarifas actualizadas correctamente.")
-                win.destroy()
-            except ValueError:
-                messagebox.showerror("Error", "Los valores deben ser números válidos.")
-
-        tk.Button(win, text="GUARDAR", font=FUENTE_TITULO,
-                  bg=COLORES["amarillo"], fg=COLORES["bg"],
-                  relief="flat", command=guardar).pack(pady=12, ipadx=20, ipady=6)
-
-    def _cambiar_password(self):
-        nueva = simpledialog.askstring("Cambiar contraseña",
-                                        "Nueva contraseña:", show="●", parent=self)
-        if nueva:
-            self.gestor_auth.cambiar_password(self.conductor_actual, nueva)
-            messagebox.showinfo("✅ Listo", "Contraseña actualizada correctamente.")
+        MDLabel:
+            text: "0.00 €"
+            font_style: "H2" # Letras muy grandes para el precio
+            halign: "center"
+            theme_text_color: "Primary"
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# PUNTO DE ENTRADA
-# ══════════════════════════════════════════════════════════════════════════════
+    # --- PANEL DE ACCIONES (Botones Grandes) ---
+    MDBoxLayout:
+        orientation: 'horizontal'
+        spacing: dp(15)
+        size_hint_y: None
+        height: dp(80)
+        padding: [0, dp(15), 0, 0]
 
-if __name__ == "__main__":
-    app = AppTaximetro()
-    app.mainloop()
+        # Botón Activar (Play)
+        # REQUISITO: Diseño Rounded y Iconos de 32x32 px
+        MDFillRoundFlatIconButton:
+            icon: "play-outline"
+            text: "Activar"
+            # Aumentar tamaño base de fuente del botón
+            font_size: "18sp" 
+            # Aumentar tamaño del icono dentro del botón
+            icon_size: dp(32) 
+            md_bg_color: 0.20, 0.66, 0.33, 1  # Verde Material (#34A853)
+            size_hint_x: 1
+            height: dp(60) # Botón más alto y redondeado
+
+            on_release: app.iniciar_taximetro()
+
+        # Botón Parar (Pause)
+        MDFillRoundFlatIconButton:
+            icon: "pause-outline"
+            text: "Parar"
+            font_size: "18sp"
+            icon_size: dp(32)
+            md_bg_color: 0.98, 0.74, 0.02, 1  # Amarillo Material (#FBBC05)
+            text_color: 0.13, 0.13, 0.14, 1 # Texto oscuro
+            size_hint_x: 1
+            height: dp(60)
+
+            on_release: app.pausar_taximetro()
+
+        # Botón Finalizar (Stop)
+        MDFillRoundFlatIconButton:
+            icon: "stop-outline"
+            text: "Finalizar"
+            font_size: "18sp"
+            icon_size: dp(32)
+            md_bg_color: 0.92, 0.26, 0.21, 1  # Rojo Material (#EA4335)
+            size_hint_x: 1
+            height: dp(60)
+
+            on_release: app.finalizar_taximetro()
+'''
+
+# Clases auxiliares para la UI
+class ServiceListItem(OneLineAvatarListItem):
+    icon_name = StringProperty()
+    service_name = StringProperty()
+    service_color = ListProperty()
+
+class TaximetroApp(MDApp):
+    def iniciar_taximetro(self):
+        print("Taxímetro iniciado")
+
+    def pausar_taximetro(self):
+        print("Taxímetro pausado")
+
+    def finalizar_taximetro(self):
+        print("Trayecto finalizado")
+
+    def build(self):
+        # Configurar el tema visual de Material Design
+        self.theme_cls.theme_style = "Light"  # O "Dark"
+        self.theme_cls.primary_palette = "Blue"  # Color principal de la App
+        return Builder.load_string(KV)
+
+    def on_start(self):
+        # Llenar la lista de servicios dinámicamente al iniciar
+        service_list = self.root.ids.service_list
+        for servicio in SERVICIOS:
+            item = ServiceListItem(
+                icon_name=servicio.icon_name,
+                service_name=servicio.nombre,
+                # Convertir nombre de color KivyMD a lista RGBA
+                service_color=COLORES.get(
+                    servicio.color_name,
+                    [0, 0, 0, 1]
+                    )
+            )
+            service_list.add_widget(item)
+
+if __name__ == '__main__':
+    TaximetroApp().run()
