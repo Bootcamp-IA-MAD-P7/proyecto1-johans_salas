@@ -5,3 +5,10 @@
 2026-05-19 01:28:51,227 [INFO] Taximetro: Taximetro pausado.
 2026-05-19 01:29:21,763 [INFO] Taximetro: Taximetro pausado.
 2026-05-19 01:29:27,905 [INFO] Taximetro: Trayecto finalizado correctamente.
+2026-05-19 01:51:48,830 [INFO] Taximetro: Sistema de logging iniciado.
+2026-05-19 01:51:49,028 [INFO] Taximetro: App iniciada correctamente.
+2026-05-19 01:52:01,918 [INFO] Taximetro: Login exitoso: admin
+2026-05-19 01:52:05,203 [INFO] Taximetro: Servicio: Compartido
+2026-05-19 01:52:06,639 [INFO] Taximetro: Taximetro activado.
+2026-05-19 01:52:16,924 [INFO] Taximetro: Taximetro pausado.
+2026-05-19 01:52:41,941 [INFO] Taximetro: Trayecto finalizado correctamente.
