@@ -33,3 +33,17 @@
 2026-05-19 02:50:26,106 [WARNING] Taximetro: Intento login fallido: admin
 2026-05-19 02:50:36,559 [WARNING] Taximetro: Intento login fallido: admins
 2026-05-19 02:50:43,680 [INFO] Taximetro: Login exitoso: admin
+2026-05-19 03:14:08,097 [INFO] Taximetro: Logger iniciado. Log: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\taximetro.log
+2026-05-19 03:14:08,314 [INFO] Taximetro: App iniciada correctamente.
+2026-05-19 03:14:21,485 [WARNING] Taximetro: Login fallido: admin
+2026-05-19 03:14:28,309 [INFO] Taximetro: Login exitoso: admin
+2026-05-19 03:14:38,879 [INFO] Taximetro: Servicio: Pet Friendly
+2026-05-19 03:14:41,193 [INFO] Taximetro: Trayecto iniciado/reanudado.
+2026-05-19 03:15:10,877 [INFO] Taximetro: Taximetro pausado.
+2026-05-19 03:15:19,920 [INFO] Taximetro: Trayecto iniciado/reanudado.
+2026-05-19 03:15:27,361 [INFO] Taximetro: Historial guardado.
+2026-05-19 03:15:27,362 [INFO] Taximetro: Trayecto finalizado: 5.03 EUR
+2026-05-19 03:15:52,977 [INFO] Taximetro: Factura PDF generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_20260519_031441.pdf
+2026-05-19 03:15:52,977 [INFO] Taximetro: Factura generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_20260519_031441.pdf
+2026-05-19 03:19:43,084 [INFO] Taximetro: Logger iniciado. Log: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\taximetro.log
+2026-05-19 03:19:43,366 [INFO] Taximetro: App iniciada correctamente.
