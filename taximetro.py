@@ -468,7 +468,7 @@ MDBoxLayout:
         text_color: 1, 1, 1, 1
 
     ScrollView:
-        size_hint_y: 0.16
+        size_hint_y: 0.24
         MDList:
             id: service_list
             canvas.before:
@@ -488,7 +488,7 @@ MDBoxLayout:
         padding: [dp(14), dp(8), dp(14), dp(8)]
         spacing: dp(2)
         size_hint_y: None
-        height: dp(110)
+        height: dp(95)
         radius: [dp(16)]
         elevation: 4
         md_bg_color: 0.12, 0.12, 0.22, 1
@@ -539,7 +539,7 @@ MDBoxLayout:
         orientation: "vertical"
         padding: [dp(14), dp(6), dp(14), dp(6)]
         size_hint_y: None
-        height: dp(90)
+        height: dp(75)
         radius: [dp(12)]
         elevation: 2
         md_bg_color: 0.10, 0.10, 0.18, 1
@@ -588,72 +588,81 @@ MDBoxLayout:
             theme_text_color: "Custom"
             text_color: 0.4, 0.9, 0.5, 1
 
-    MDBoxLayout:
-        orientation: "horizontal"
-        spacing: dp(6)
-        size_hint_y: None
-        height: dp(60)
-        padding: [0, dp(4), 0, 0]
+        MDBoxLayout:
+            orientation: "vertical"
+            spacing: dp(8)
+            size_hint_y: None
+            height: dp(120)
+            padding: [0, dp(4), 0, 0]
 
-    MDFillRoundFlatIconButton:
-        id: btn_activar
-        icon: "play-circle-outline"
-        text: "Activar"
-        font_size: "12sp"
-        icon_size: dp(20)
-        md_bg_color: 0.13, 0.70, 0.37, 1
-        text_color: 1, 1, 1, 1
-        size_hint_x: 1
-        height: dp(42)
-        on_release: app.iniciar_taximetro()
+            MDBoxLayout:
+                orientation: "horizontal"
+                spacing: dp(8)
 
-    MDFillRoundFlatIconButton:
-        id: btn_parar
-        icon: "pause-circle-outline"
-        text: "Parar"
-        font_size: "12sp"
-        icon_size: dp(20)
-        md_bg_color: 0.95, 0.76, 0.05, 1
-        text_color: 0.10, 0.10, 0.10, 1
-        size_hint_x: 1
-        height: dp(42)
-        on_release: app.pausar_taximetro()
+                MDFillRoundFlatIconButton:
+                    id: btn_activar
+                    icon: "play-circle-outline"
+                    text: "Activar"
+                    font_size: "12sp"
+                    icon_size: dp(20)
+                    md_bg_color: 0.13, 0.70, 0.37, 1
+                    text_color: 1, 1, 1, 1
+                    size_hint_x: 1
+                    height: dp(42)
+                    on_release: app.iniciar_taximetro()
 
-    MDFillRoundFlatIconButton:
-        id: btn_historial
-        icon: "history"
-        text: "Historial"
-        font_size: "12sp"
-        icon_size: dp(20)
-        md_bg_color: 0.2, 0.4, 0.8, 1
-        text_color: 1, 1, 1, 1
-        size_hint_x: 1
-        height: dp(42)
-        on_release: app.ver_historial()
+                MDFillRoundFlatIconButton:
+                    id: btn_parar
+                    icon: "pause-circle-outline"
+                    text: "Parar"
+                    font_size: "12sp"
+                    icon_size: dp(20)
+                    md_bg_color: 0.95, 0.76, 0.05, 1
+                    text_color: 0.10, 0.10, 0.10, 1
+                    size_hint_x: 1
+                    height: dp(42)
+                    on_release: app.pausar_taximetro()
 
-    MDFillRoundFlatIconButton:
-        id: btn_finalizar
-        icon: "stop-circle-outline"
-        text: "Finalizar"
-        font_size: "12sp"
-        icon_size: dp(20)
-        md_bg_color: 0.88, 0.20, 0.18, 1
-        text_color: 1, 1, 1, 1
-        size_hint_x: 1
-        height: dp(42)
-        on_release: app.finalizar_taximetro()
+            MDBoxLayout:
+                orientation: "horizontal"
+                spacing: dp(8)
 
-    MDFillRoundFlatIconButton:
-        id: btn_factura
-        icon: "file-pdf-box"
-        text: "Generar Factura PDF"
-        font_size: "14sp"
-        icon_size: dp(24)
-        md_bg_color: 0.20, 0.35, 0.75, 1
-        text_color: 1, 1, 1, 1
-        size_hint_x: 1
-        height: dp(42)
-        on_release: app.generar_factura()
+                MDFillRoundFlatIconButton:
+                    id: btn_historial
+                    icon: "history"
+                    text: "Historial"
+                    font_size: "12sp"
+                    icon_size: dp(20)
+                    md_bg_color: 1.0, 0.6, 0.1, 1
+                    text_color: 0, 0, 0, 1
+                    size_hint_x: 1
+                    height: dp(42)
+                    on_release: app.ver_historial()
+
+                MDFillRoundFlatIconButton:
+                    id: btn_finalizar
+                    icon: "stop-circle-outline"
+                    text: "Finalizar"
+                    font_size: "12sp"
+                    icon_size: dp(20)
+                    md_bg_color: 0.88, 0.20, 0.18, 1
+                    text_color: 1, 1, 1, 1
+                    size_hint_x: 1
+                    height: dp(42)
+                    on_release: app.finalizar_taximetro()
+
+        MDFillRoundFlatIconButton:
+            id: btn_factura
+            icon: "file-pdf-box"
+            text: "Generar Factura PDF"
+            font_size: "13sp"
+            icon_size: dp(22)
+            md_bg_color: 0.20, 0.35, 0.75, 1
+            text_color: 1, 1, 1, 1
+            size_hint_y: None
+            height: dp(40)
+            on_release: app.generar_factura()  
+
 '''
 
 
