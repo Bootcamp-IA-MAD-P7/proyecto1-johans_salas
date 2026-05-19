@@ -92,10 +92,10 @@ Cada acción relevante debería quedar registrada en 'taximetro.log':
 
 ```
 
-2026-04-16 10:23:01 [INFO] Taximetro: Sesión iniciada por 'admin'.
-2026-04-16 10:23:05 [INFO] Taximetro: Trayecto iniciado.
-2026-04-16 10:23:10 [INFO] Taximetro: Estado cambiado a: movimiento
-2026-04-16 10:23:45 [INFO] Taximetro: Trayecto finalizado. Importe: 3.27€
+- 2026-04-16 10:23:01 [INFO] Taximetro: Sesión iniciada por 'admin'.
+- 2026-04-16 10:23:05 [INFO] Taximetro: Trayecto iniciado.
+- 2026-04-16 10:23:10 [INFO] Taximetro: Estado cambiado a: movimiento
+- 2026-04-16 10:23:45 [INFO] Taximetro: Trayecto finalizado. Importe: 3.27€
 
 ```
 
