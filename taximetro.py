@@ -13,8 +13,8 @@ from datetime import datetime
 
 # ── Kivy config ANTES de cualquier otro import de Kivy ──────────────────────
 from kivy.config import Config
-Config.set('graphics', 'width',     '450')
-Config.set('graphics', 'height',    '780')
+Config.set('graphics', 'width',     '390')
+Config.set('graphics', 'height',    '680')
 Config.set('graphics', 'resizable', False)
 
 from kivymd.app            import MDApp
@@ -418,14 +418,14 @@ KV = '''
 
 MDBoxLayout:
     orientation: "vertical"
-    padding: dp(10)
-    spacing: dp(6)
+    padding: dp(6)
+    spacing: dp(4)
     md_bg_color: 0.07, 0.07, 0.12, 1
 
     MDBoxLayout:
         orientation: "horizontal"
         size_hint_y: None
-        height: dp(56)
+        height: dp(46)
         spacing: dp(12)
         padding: [dp(4), 0, 0, 0]
         MDIcon:
@@ -456,7 +456,7 @@ MDBoxLayout:
         text_color: 1, 1, 1, 1
 
     ScrollView:
-        size_hint_y: 0.22
+        size_hint_y: 0.16
         MDList:
             id: service_list
             canvas.before:
@@ -476,7 +476,7 @@ MDBoxLayout:
         padding: [dp(14), dp(8), dp(14), dp(8)]
         spacing: dp(2)
         size_hint_y: None
-        height: dp(130)
+        height: dp(110)
         radius: [dp(16)]
         elevation: 4
         md_bg_color: 0.12, 0.12, 0.22, 1
