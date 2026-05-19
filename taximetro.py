@@ -42,6 +42,10 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.button import MDFlatButton
 
+# ── HISTORIAL DE TRAYECTOS ───────────────────────────────────────────────────
+from kivymd.uix.scrollview import MDScrollView
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # RUTAS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -441,6 +445,14 @@ MDBoxLayout:
             pos_hint: {"center_y": .5}
             theme_text_color: "Custom"
             text_color: 1, 1, 1, 1
+        MDFillRoundFlatIconButton:
+            text: "Salir"
+            icon: "logout"
+            size_hint_x: None
+            width: dp(90)
+            height: dp(36)
+            md_bg_color: 0.8, 0.2, 0.2, 1
+            on_release: app.cerrar_sesion()
 
     MDBoxLayout:
         size_hint_y: None
@@ -608,6 +620,12 @@ MDBoxLayout:
             on_release: app.pausar_taximetro()
 
         MDFillRoundFlatIconButton:
+            text: "Ver Historial"
+            icon: "history"
+            md_bg_color: 0.2, 0.4, 0.8, 1
+            on_release: app.ver_historial()
+
+        MDFillRoundFlatIconButton:
             id: btn_finalizar
             icon: "stop-circle-outline"
             text: "Finalizar"
@@ -717,6 +735,21 @@ class TaximetroApp(MDApp):
              f"Intento login fallido: {usuario}"
             )
 
+    def cerrar_sesion(self):
+
+        self._usuario_actual = None
+
+        self.root.ids.lbl_resumen.text = (
+        "Sesion cerrada"
+        ) 
+
+        logger.info("Sesion cerrada.")
+
+        Clock.schedule_once(
+            lambda dt: self.mostrar_login(),
+            0.5
+        )
+
     def build(self):
         self.theme_cls.theme_style     = "Dark"
         self.theme_cls.primary_palette = "Amber"
@@ -747,28 +780,46 @@ class TaximetroApp(MDApp):
         logger.info(f"Servicio: {servicio.nombre}")
 
     def iniciar_taximetro(self):
-        if self._activo:
-            return
+
         tarifa = self._gestor_config.tarifa
+
+        # Si NO existe trayecto, crear uno nuevo
         if self._trayecto_actual is None:
+
             ahora = datetime.now()
+
             self._trayecto_actual = Trayecto(
-                id           = ahora.strftime("%Y%m%d_%H%M%S"),
-                fecha_inicio = ahora.isoformat(),
-                servicio     = self._servicio_actual.clave,
+                id=ahora.strftime("%Y%m%d_%H%M%S"),
+                fecha_inicio=ahora.isoformat(),
+                servicio=self._servicio_actual.clave,
             )
-            self._importe = tarifa.precio_bajada_bandera + self._servicio_actual.cargo_fijo
-            self.root.ids.lbl_inicio.text  = f"Inicio: {ahora.strftime('%H:%M:%S')}"
-            self.root.ids.lbl_fin.text     = "Fin: --:--:--"
-            self.root.ids.lbl_resumen.text = ""
+
+            self._importe = (
+                tarifa.precio_bajada_bandera
+                + self._servicio_actual.cargo_fijo
+            )
+
+            self.root.ids.lbl_inicio.text = (
+                f"Inicio: {ahora.strftime('%H:%M:%S')}"
+            )
+
+            self.root.ids.lbl_fin.text = "Fin: --:--:--"
+
+        # IMPORTANTE
         self._activo = True
         self._pausado = False
+
         self.root.ids.lbl_estado.text = "EN MOVIMIENTO..."
 
+        # Crear clock SOLO si no existe
         if self._clock_event is None:
-            self._clock_event = Clock.schedule_interval(self._tick, 1.0)
 
-        logger.info("Taximetro activado.")
+            self._clock_event = Clock.schedule_interval(
+                self._tick,
+                1.0
+            )
+
+        logger.info("Trayecto iniciado/reanudado.")
 
     def pausar_taximetro(self):
 
@@ -886,6 +937,64 @@ class TaximetroApp(MDApp):
         self.root.ids.lbl_t_parado.text = (
             f"Parado: {int(self._segundos_parado)}s"
         )
+
+    def ver_historial(self):
+
+        contenido = MDBoxLayout(
+            orientation="vertical",
+            spacing="10dp",
+            size_hint_y=None
+        )
+
+        contenido.bind(
+            minimum_height=contenido.setter("height")
+        )
+
+        trayectos = self._gestor_historial.trayectos
+
+        if not trayectos:
+
+            contenido.add_widget(
+
+                MDLabel(
+                    text="No hay trayectos registrados.",
+                    halign="center"
+                )
+            )
+
+        else:
+
+            for t in reversed(trayectos):
+
+                texto = (
+                    f"[b]{t.id}[/b]\n"
+                    f"Total: {t.importe_total:.2f} EUR\n"
+                    f"Mov: {int(t.segundos_movimiento)}s\n"
+                    f"Parado: {int(t.segundos_parado)}s"
+                )
+
+                contenido.add_widget(
+
+                    MDLabel(
+                        text=texto,
+                        markup=True,
+                        size_hint_y=None,
+                        height="90dp"
+                    )
+                )
+
+        scroll = MDScrollView()
+
+        scroll.add_widget(contenido)
+
+        dialog = MDDialog(
+            title="Historial de Trayectos",
+            type="custom",
+            content_cls=scroll,
+            size_hint=(0.9, 0.8),
+        )
+
+        dialog.open()
 
     def generar_factura(self):
         if self._ultimo_trayecto is None:

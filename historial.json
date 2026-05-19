@@ -118,5 +118,15 @@
     "importe_total": 2.1,
     "conductor": "",
     "servicio": "compartido"
+  },
+  {
+    "id": "20260519_020211",
+    "fecha_inicio": "2026-05-19T02:02:11.147896",
+    "fecha_fin": "2026-05-19T02:02:42.787370",
+    "segundos_parado": 21.0,
+    "segundos_movimiento": 10.0,
+    "importe_total": 2.42,
+    "conductor": "",
+    "servicio": "economico"
   }
 ]
