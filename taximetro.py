@@ -13,7 +13,7 @@ from datetime import datetime
 
 # ── Kivy config ANTES de cualquier otro import de Kivy ──────────────────────
 from kivy.config import Config
-Config.set('graphics', 'width',     '390')
+Config.set('graphics', 'width',     '440')
 Config.set('graphics', 'height',    '680')
 Config.set('graphics', 'resizable', False)
 
@@ -590,52 +590,58 @@ MDBoxLayout:
 
     MDBoxLayout:
         orientation: "horizontal"
-        spacing: dp(10)
+        spacing: dp(6)
         size_hint_y: None
-        height: dp(68)
+        height: dp(60)
         padding: [0, dp(4), 0, 0]
 
-        MDFillRoundFlatIconButton:
-            id: btn_activar
-            icon: "play-circle-outline"
-            text: "Activar"
-            font_size: "15sp"
-            icon_size: dp(28)
-            md_bg_color: 0.13, 0.70, 0.37, 1
-            text_color: 1, 1, 1, 1
-            size_hint_x: 1
-            height: dp(48)
-            on_release: app.iniciar_taximetro()
+    MDFillRoundFlatIconButton:
+        id: btn_activar
+        icon: "play-circle-outline"
+        text: "Activar"
+        font_size: "12sp"
+        icon_size: dp(20)
+        md_bg_color: 0.13, 0.70, 0.37, 1
+        text_color: 1, 1, 1, 1
+        size_hint_x: 1
+        height: dp(42)
+        on_release: app.iniciar_taximetro()
 
-        MDFillRoundFlatIconButton:
-            id: btn_parar
-            icon: "pause-circle-outline"
-            text: "Parar"
-            font_size: "15sp"
-            icon_size: dp(28)
-            md_bg_color: 0.95, 0.76, 0.05, 1
-            text_color: 0.10, 0.10, 0.10, 1
-            size_hint_x: 1
-            height: dp(48)
-            on_release: app.pausar_taximetro()
+    MDFillRoundFlatIconButton:
+        id: btn_parar
+        icon: "pause-circle-outline"
+        text: "Parar"
+        font_size: "12sp"
+        icon_size: dp(20)
+        md_bg_color: 0.95, 0.76, 0.05, 1
+        text_color: 0.10, 0.10, 0.10, 1
+        size_hint_x: 1
+        height: dp(42)
+        on_release: app.pausar_taximetro()
 
-        MDFillRoundFlatIconButton:
-            text: "Ver Historial"
-            icon: "history"
-            md_bg_color: 0.2, 0.4, 0.8, 1
-            on_release: app.ver_historial()
+    MDFillRoundFlatIconButton:
+        id: btn_historial
+        icon: "history"
+        text: "Historial"
+        font_size: "12sp"
+        icon_size: dp(20)
+        md_bg_color: 0.2, 0.4, 0.8, 1
+        text_color: 1, 1, 1, 1
+        size_hint_x: 1
+        height: dp(42)
+        on_release: app.ver_historial()
 
-        MDFillRoundFlatIconButton:
-            id: btn_finalizar
-            icon: "stop-circle-outline"
-            text: "Finalizar"
-            font_size: "15sp"
-            icon_size: dp(28)
-            md_bg_color: 0.88, 0.20, 0.18, 1
-            text_color: 1, 1, 1, 1
-            size_hint_x: 1
-            height: dp(48)
-            on_release: app.finalizar_taximetro()
+    MDFillRoundFlatIconButton:
+        id: btn_finalizar
+        icon: "stop-circle-outline"
+        text: "Finalizar"
+        font_size: "12sp"
+        icon_size: dp(20)
+        md_bg_color: 0.88, 0.20, 0.18, 1
+        text_color: 1, 1, 1, 1
+        size_hint_x: 1
+        height: dp(42)
+        on_release: app.finalizar_taximetro()
 
     MDFillRoundFlatIconButton:
         id: btn_factura
