@@ -28,3 +28,8 @@
 2026-05-19 02:34:29,772 [INFO] Taximetro: App iniciada correctamente.
 2026-05-19 02:34:53,243 [INFO] Taximetro: Login exitoso: admin
 2026-05-19 02:40:35,726 [INFO] Taximetro: Sesion cerrada.
+2026-05-19 02:50:16,241 [INFO] Taximetro: Sistema de logging iniciado.
+2026-05-19 02:50:16,488 [INFO] Taximetro: App iniciada correctamente.
+2026-05-19 02:50:26,106 [WARNING] Taximetro: Intento login fallido: admin
+2026-05-19 02:50:36,559 [WARNING] Taximetro: Intento login fallido: admins
+2026-05-19 02:50:43,680 [INFO] Taximetro: Login exitoso: admin
