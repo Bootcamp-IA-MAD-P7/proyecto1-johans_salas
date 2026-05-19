@@ -19,3 +19,8 @@
 2026-05-19 02:02:21,808 [INFO] Taximetro: Taximetro pausado.
 2026-05-19 02:02:42,788 [INFO] Taximetro: Trayecto finalizado correctamente.
 2026-05-19 02:02:45,125 [INFO] Taximetro: Factura PDF generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_20260519_020211.pdf
+2026-05-19 02:22:11,901 [INFO] Taximetro: Sistema de logging iniciado.
+2026-05-19 02:22:12,213 [INFO] Taximetro: App iniciada correctamente.
+2026-05-19 02:22:26,409 [INFO] Taximetro: Login exitoso: admin
+2026-05-19 02:22:31,937 [INFO] Taximetro: Trayecto iniciado/reanudado.
+2026-05-19 02:22:49,385 [INFO] Taximetro: Taximetro pausado.
