@@ -1,4 +1,4 @@
-# 🚕 Taxímetro Digital Pro
+# 🚕 Taxímetro Digital
 
 Prototipo avanzado de taxímetro digital desarrollado en Python utilizando el framework **KivyMD**. Esta aplicación ofrece una interfaz moderna con diseño de materiales, gestión de múltiples tipos de servicios, generación de facturas en PDF y un sistema robusto de persistencia de datos.
 
@@ -10,11 +10,11 @@ Prototipo avanzado de taxímetro digital desarrollado en Python utilizando el fr
 Proyecto1_Taximetro_js/
 ├── taximetro.py          	# Aplicación principal (GUI KivyMD + Lógica)
 ├── tests_taximetro.py     	# Batería de pruebas unitarias
-├── start_project.bat 		# Script de automatización (VENV + Instalación)
+├── start_project.bat 		  # Script de automatización (VENV + Instalación)
 ├── taximetro.log         	# Registro detallado de eventos y errores
 ├── historial.json        	# Base de datos local de trayectos realizados
 ├── usuarios.json         	# Gestión de credenciales (Hash SHA-256)
-├── error.txt         	# Captura y visualización de errores
+├── error.txt         	    # Captura y visualización de errores
 └── facturas/             	# Carpeta de destino de las facturas PDF
 
 ---
