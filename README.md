@@ -10,7 +10,7 @@ Prototipo avanzado de taxímetro digital desarrollado en Python utilizando el fr
 Proyecto1_Taximetro_js/
 ├── taximetro.py          	# Aplicación principal (GUI KivyMD + Lógica)
 ├── tests_taximetro.py     	# Batería de pruebas unitarias
-├── start_project.bat 		  # Script de automatización (VENV + Instalación)
+├── start_project.bat 		# Script de automatización (VENV + Instalación)
 ├── taximetro.log         	# Registro detallado de eventos y errores
 ├── historial.json        	# Base de datos local de trayectos realizados
 ├── usuarios.json         	# Gestión de credenciales (Hash SHA-256)
