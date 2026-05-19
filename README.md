@@ -47,15 +47,17 @@ El sistema cuenta con un diálogo de autenticación obligatorio al inicio.
 
 ## 🛠️ Tecnologías utilizadas
 
-| Tecnología      | Uso                                |
-|-----------------|------------------------------------|
-| Python 3.10+    | Lenguaje principal                 |
-| ReportLab       | Generación de facturas en PDF      |
-| logging         | Trazabilidad y logs                |
-| unittest        | Tests unitarios                    |
-| json            | Persistencia de datos              |
-| hashlib SHA-256 | Hash de contraseñas                |
-| dataclasses     | Modelos de datos (Tarifa, Trayecto)|
+| Tecnología      | Uso                                             |
+|-----------------|-------------------------------------------------|
+| Python 3.10+    | Lenguaje principal                              |
+| ReportLab       | Generación de facturas en PDF                   |
+| logging         | Trazabilidad y logs                             |
+| unittest        | Tests unitarios                                 |
+| json            | Persistencia de datos                           |
+| hashlib SHA-256 | Hash de contraseñas                             |
+| dataclasses     | Modelos de datos (Tarifa, Trayecto, Servicios)  |
+| Kivy            | Desarrollo de interfaz gráfica multiplataforma  | 
+| KivyMD          | Componentes visuales basados en Material Design |
 
 
 ---
