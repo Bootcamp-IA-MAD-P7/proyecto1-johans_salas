@@ -62,3 +62,28 @@
 2026-05-19 04:12:54,689 [INFO] Taximetro: App iniciada correctamente.
 2026-05-19 04:13:01,278 [INFO] Taximetro: Logger iniciado. Log: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\taximetro.log
 2026-05-19 04:13:01,531 [INFO] Taximetro: App iniciada correctamente.
+2026-05-19 04:33:11,815 [INFO] Taximetro: Logger iniciado. Log: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\taximetro.log
+2026-05-19 04:33:12,061 [INFO] Taximetro: App iniciada correctamente.
+2026-05-19 04:33:23,561 [WARNING] Taximetro: Login fallido: admin
+2026-05-19 04:33:27,615 [WARNING] Taximetro: Login fallido: admin
+2026-05-19 04:33:40,461 [INFO] Taximetro: Login exitoso: admin
+2026-05-19 04:33:45,908 [INFO] Taximetro: Servicio: XL / Familiar
+2026-05-19 04:33:47,447 [INFO] Taximetro: Trayecto iniciado/reanudado.
+2026-05-19 04:34:15,093 [INFO] Taximetro: Taximetro pausado.
+2026-05-19 04:34:21,067 [INFO] Taximetro: Trayecto iniciado/reanudado.
+2026-05-19 04:34:43,133 [INFO] Taximetro: Historial guardado.
+2026-05-19 04:34:43,134 [INFO] Taximetro: Trayecto finalizado: 7.10 EUR
+2026-05-19 04:34:45,177 [INFO] Taximetro: Factura PDF generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_20260519_043347.pdf
+2026-05-19 04:34:45,178 [INFO] Taximetro: Factura generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_20260519_043347.pdf
+2026-05-19 04:35:00,297 [INFO] Taximetro: Sesion cerrada.
+2026-05-19 04:37:20,437 [INFO] Taximetro: Logger iniciado. Log: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\taximetro.log
+2026-05-19 04:37:20,475 [INFO] Taximetro: Historial guardado.
+2026-05-19 04:37:20,509 [INFO] Taximetro: Factura PDF generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_TEST-ECONOMICO-1779158240.pdf
+2026-05-19 04:37:20,519 [INFO] Taximetro: Historial guardado.
+2026-05-19 04:37:20,545 [INFO] Taximetro: Factura PDF generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_TEST-XL-1779158240.pdf
+2026-05-19 04:37:20,554 [INFO] Taximetro: Historial guardado.
+2026-05-19 04:37:20,574 [INFO] Taximetro: Factura PDF generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_TEST-COMPARTIDO-1779158240.pdf
+2026-05-19 04:37:20,581 [INFO] Taximetro: Historial guardado.
+2026-05-19 04:37:20,591 [INFO] Taximetro: Factura PDF generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_TEST-PET-1779158240.pdf
+2026-05-19 04:37:20,598 [INFO] Taximetro: Historial guardado.
+2026-05-19 04:37:20,609 [INFO] Taximetro: Factura PDF generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_TEST-FLASH-1779158240.pdf

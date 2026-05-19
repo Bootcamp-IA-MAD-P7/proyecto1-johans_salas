@@ -148,5 +148,65 @@
     "importe_total": 6.37,
     "conductor": "",
     "servicio": "flash"
+  },
+  {
+    "id": "20260519_043347",
+    "fecha_inicio": "2026-05-19T04:33:47.446968",
+    "fecha_fin": "2026-05-19T04:34:43.131907",
+    "segundos_parado": 6.0,
+    "segundos_movimiento": 49.0,
+    "importe_total": 7.1,
+    "conductor": "",
+    "servicio": "xl"
+  },
+  {
+    "id": "TEST-ECONOMICO-1779158240",
+    "fecha_inicio": "2026-05-19 04:37:20",
+    "fecha_fin": "2026-05-19 04:37:20",
+    "segundos_parado": 30,
+    "segundos_movimiento": 60,
+    "importe_total": 5.1,
+    "conductor": "TEST_AUTOMATICO",
+    "servicio": "economico"
+  },
+  {
+    "id": "TEST-XL-1779158240",
+    "fecha_inicio": "2026-05-19 04:37:20",
+    "fecha_fin": "2026-05-19 04:37:20",
+    "segundos_parado": 30,
+    "segundos_movimiento": 60,
+    "importe_total": 8.54,
+    "conductor": "TEST_AUTOMATICO",
+    "servicio": "xl"
+  },
+  {
+    "id": "TEST-COMPARTIDO-1779158240",
+    "fecha_inicio": "2026-05-19 04:37:20",
+    "fecha_fin": "2026-05-19 04:37:20",
+    "segundos_parado": 30,
+    "segundos_movimiento": 60,
+    "importe_total": 3.66,
+    "conductor": "TEST_AUTOMATICO",
+    "servicio": "compartido"
+  },
+  {
+    "id": "TEST-PET-1779158240",
+    "fecha_inicio": "2026-05-19 04:37:20",
+    "fecha_fin": "2026-05-19 04:37:20",
+    "segundos_parado": 30,
+    "segundos_movimiento": 60,
+    "importe_total": 6.6,
+    "conductor": "TEST_AUTOMATICO",
+    "servicio": "pet"
+  },
+  {
+    "id": "TEST-FLASH-1779158240",
+    "fecha_inicio": "2026-05-19 04:37:20",
+    "fecha_fin": "2026-05-19 04:37:20",
+    "segundos_parado": 30,
+    "segundos_movimiento": 60,
+    "importe_total": 8.82,
+    "conductor": "TEST_AUTOMATICO",
+    "servicio": "flash"
   }
 ]
