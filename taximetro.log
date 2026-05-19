@@ -47,3 +47,18 @@
 2026-05-19 03:15:52,977 [INFO] Taximetro: Factura generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_20260519_031441.pdf
 2026-05-19 03:19:43,084 [INFO] Taximetro: Logger iniciado. Log: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\taximetro.log
 2026-05-19 03:19:43,366 [INFO] Taximetro: App iniciada correctamente.
+2026-05-19 04:06:40,740 [INFO] Taximetro: Logger iniciado. Log: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\taximetro.log
+2026-05-19 04:06:40,971 [INFO] Taximetro: App iniciada correctamente.
+2026-05-19 04:06:52,122 [INFO] Taximetro: Login exitoso: admin
+2026-05-19 04:06:55,224 [INFO] Taximetro: Servicio: Flash
+2026-05-19 04:06:57,111 [INFO] Taximetro: Trayecto iniciado/reanudado.
+2026-05-19 04:07:16,066 [INFO] Taximetro: Taximetro pausado.
+2026-05-19 04:07:28,413 [INFO] Taximetro: Trayecto iniciado/reanudado.
+2026-05-19 04:07:36,415 [INFO] Taximetro: Historial guardado.
+2026-05-19 04:07:36,416 [INFO] Taximetro: Trayecto finalizado: 6.37 EUR
+2026-05-19 04:07:40,241 [INFO] Taximetro: Factura PDF generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_20260519_040657.pdf
+2026-05-19 04:07:40,241 [INFO] Taximetro: Factura generada: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\facturas\factura_20260519_040657.pdf
+2026-05-19 04:12:54,457 [INFO] Taximetro: Logger iniciado. Log: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\taximetro.log
+2026-05-19 04:12:54,689 [INFO] Taximetro: App iniciada correctamente.
+2026-05-19 04:13:01,278 [INFO] Taximetro: Logger iniciado. Log: C:\Users\usuario\Desktop\ProjectsF5\Proyecto1_Taximetro_js\taximetro.log
+2026-05-19 04:13:01,531 [INFO] Taximetro: App iniciada correctamente.

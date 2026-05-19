@@ -794,9 +794,9 @@ class TaximetroApp(MDApp):
                                     f"Servicio: {t.servicio.upper()} | [color=FFD700]Total: {t.importe_total:.2f}€[/color]\n"
                                     f"Mov: {int(t.segundos_movimiento)}s | Parado: {int(t.segundos_parado)}s")
                             
-                            card.add_widget(MDLabel(text=info, markup=True, theme_text_color="Custom", 
+                card.add_widget(MDLabel(text=info, markup=True, theme_text_color="Custom", 
                                                     text_color=[1,1,1,1], font_style="Caption"))
-                            contenido.add_widget(card)
+                contenido.add_widget(card)
         # ScrollView con altura limitada para forzar al Dialog a expandirse
         scroll = MDScrollView(size_hint_y=None, height=dp(400))
         scroll.add_widget(contenido)

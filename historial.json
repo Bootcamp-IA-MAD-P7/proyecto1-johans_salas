@@ -138,5 +138,15 @@
     "importe_total": 5.03,
     "conductor": "",
     "servicio": "pet"
+  },
+  {
+    "id": "20260519_040657",
+    "fecha_inicio": "2026-05-19T04:06:57.110827",
+    "fecha_fin": "2026-05-19T04:07:36.413464",
+    "segundos_parado": 13.0,
+    "segundos_movimiento": 26.0,
+    "importe_total": 6.37,
+    "conductor": "",
+    "servicio": "flash"
   }
 ]
